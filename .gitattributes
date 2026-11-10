@@ -1,0 +1,2 @@
+# Preserve exact source and asset bytes across development platforms.
+* -text

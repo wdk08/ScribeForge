@@ -1,0 +1,26 @@
+.profanity-panel {
+  position: fixed;
+  inset: auto 1rem 2.75rem auto;
+  margin: 0;
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: min(65vh, 42rem);
+  overflow: auto;
+  z-index: 30;
+}
+.profanity-panel details, #profanity-dictionary fieldset, #profanity-dictionary fieldset div {
+  margin-block: .5rem;
+}
+.profanity-filters, #profanity-dictionary fieldset div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.profanity-panel select {
+  max-width: 14rem;
+}
+.profanity-panel summary, #profanity-occurrences button {
+  cursor: pointer;
+}
+#profanity-occurrences button {
+  text-align: left;
+}

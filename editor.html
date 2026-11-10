@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><script src="./js/theme.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StoryForge · Manuscript editor</title><link rel="icon" href="./StoryForge.png">
+  <link rel="stylesheet" href="./css/editor.css"><link rel="stylesheet" href="./css/files.css"><link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/editor-features.css"><link rel="stylesheet" href="./css/table-read.css"><link rel="stylesheet" href="./css/profanity.css"><link rel="stylesheet" href="./css/theme.css"><link rel="stylesheet" href="./css/prose.css">
+  <script type="module" src="./app/manuscript.js"></script>
+</head>
+<body class="editor-app">
+  <header class="app-header">
+    <a id="home" href="./index.html" class="home-button" title="Manuscript library" aria-label="Home">←</a>
+    <img class="brand-logo" src="./StoryForge.png" width="44" height="44" alt="">
+    <div class="document-heading"><div class="brand-name">STORYFORGE <span class="stage-badge">MANUSCRIPT EDITOR</span></div>
+      <input id="document-title" maxlength="200" aria-label="Manuscript title" disabled>
+      <span id="save-state" class="save-state" role="status">Opening manuscript…</span></div>
+    <div class="header-actions"><button id="save" class="quiet-button" disabled>Save</button><details class="export-menu"><summary id="export" class="primary-button">Export <span aria-hidden="true">↗</span></summary>
+      <div class="export-options"><button data-export="stf">StoryForge (.stf)</button><button data-export="pdf">PDF (.pdf)</button><button data-export="docx">Word (.docx)</button><button data-export="epub">Ebook (.epub)</button><button data-export="txt">Plain text (.txt)</button></div></details></div>
+  </header>
+  <nav class="editing-bar" aria-label="Editing tools">
+    <details class="file-menu toolbar-menu"><summary>File</summary><div class="file-menu-items"><button id="new-document">New manuscript</button><button id="import">Import manuscript…</button><button id="save-copy">Save as new manuscript…</button><button id="recovery">Recovery checkpoint</button><button data-export="stf">Export StoryForge copy</button></div></details>
+    <details class="tools-menu toolbar-menu"><summary>Tools</summary><div class="file-menu-items"><button id="find-open">Find &amp; Replace</button><button id="statistics">Writing Statistics</button><button id="read-to-me">Read to Me</button><button id="profanity">Profanity Analyzer</button><button id="focus-mode">Focus Mode</button><button id="paste-plain" aria-pressed="false">Paste as Plain Text</button></div></details>
+    <div class="history-tools"><button id="undo" aria-label="Undo">↶</button><button id="redo" aria-label="Redo">↷</button></div>
+    <span class="toolbar-divider"></span>
+    <select id="zoom" aria-label="Page zoom"><option value="fit">Fit width</option><option value=".75">75%</option><option value=".9">90%</option><option value="1">100%</option><option value="1.25">125%</option></select>
+    <span class="toolbar-divider"></span><button id="outline-toggle" aria-pressed="true">☷ <span>Chapters</span></button>
+    <span class="bar-spacer"></span><span id="paper-spec" class="paper-spec"></span><button id="settings" class="quiet-button">Settings</button><button id="help" class="help-button">Keyboard guide <span aria-hidden="true">?</span></button>
+  </nav>
+  <nav id="format-toolbar" class="format-toolbar" aria-label="Manuscript formatting">
+    <span class="toolbar-label">FORMAT</span><select id="paragraph-style" aria-label="Paragraph style"></select>
+    <button data-mark="bold" title="Bold" aria-label="Bold"><b>B</b></button><button data-mark="italic" title="Italic" aria-label="Italic"><i>I</i></button><button data-mark="underline" title="Underline" aria-label="Underline"><u>U</u></button><button data-mark="strike" title="Strikethrough" aria-label="Strikethrough"><s>S</s></button><button data-mark="superscript" title="Superscript" aria-label="Superscript">X<sup>2</sup></button><button data-mark="subscript" title="Subscript" aria-label="Subscript">X<sub>2</sub></button>
+    <span class="toolbar-divider"></span><input id="inline-font" autocomplete="off" list="fonts" aria-label="Font family" maxlength="80"><input id="inline-size" autocomplete="off" inputmode="decimal" aria-label="Font size in points" maxlength="12">
+    <label title="Text color">Text <input id="inline-color" type="color" value="#49339a" aria-label="Text color"></label><label title="Highlight color">Highlight <input id="inline-highlight" type="color" value="#fff0a3" aria-label="Highlight color"></label><button id="clear-marks" title="Clear inline formatting">Clear</button>
+    <span class="toolbar-divider"></span><div class="alignment-tools" role="group" aria-label="Paragraph alignment"><button type="button" data-align="left" title="Align Left" aria-label="Align Left" aria-pressed="false"><svg viewBox="0 0 16 18" width="14" height="16" aria-hidden="true"><path d="M2 3h12M2 7h8M2 11h12M2 15h8" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button><button type="button" data-align="center" title="Align Center" aria-label="Align Center" aria-pressed="false"><svg viewBox="0 0 16 18" width="14" height="16" aria-hidden="true"><path d="M2 3h12M4 7h8M2 11h12M4 15h8" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button><button type="button" data-align="right" title="Align Right" aria-label="Align Right" aria-pressed="false"><svg viewBox="0 0 16 18" width="14" height="16" aria-hidden="true"><path d="M2 3h12M6 7h8M2 11h12M6 15h8" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button><button type="button" data-align="justify" title="Justify" aria-label="Justify" aria-pressed="false"><svg viewBox="0 0 16 18" width="14" height="16" aria-hidden="true"><path d="M2 3h12M2 7h12M2 11h12M2 15h12" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button></div><button id="paragraph-format">Paragraph…</button><button id="scene-break">Scene Break</button><button id="page-break">Page Break</button>
+  </nav>
+  <datalist id="fonts"><option>Georgia</option><option>Times New Roman</option><option>Garamond</option><option>Palatino</option><option>Arial</option><option>Helvetica</option><option>Verdana</option><option>Courier New</option></datalist>
+  <section id="find-panel" class="search-panel" aria-label="Find and replace" hidden>
+    <div class="search-row"><label>Find <input id="find-query" type="search" autocomplete="off"></label><output id="find-count" aria-live="polite">0 of 0</output><button id="find-previous">Previous</button><button id="find-next">Next</button><button id="find-expand" aria-expanded="false">Replace</button><button id="find-close" aria-label="Close search">×</button></div>
+    <div class="search-row"><label><input id="find-case" type="checkbox"> Case Sensitive</label><label><input id="find-word" type="checkbox"> Whole Words</label></div>
+    <div id="replace-row" class="search-row" hidden><label>Replace with <input id="replace-text"></label><button id="replace-one">Replace</button><button id="replace-all">Replace All</button></div>
+  </section>
+  <main class="workspace">
+    <aside id="outline" class="outline" aria-label="Chapter Navigator"><div class="outline-heading">CHAPTERS <span id="chapter-count"></span></div>
+      <div id="chapter-list" role="navigation" aria-label="Chapters"></div>
+      <div class="outline-note"><span class="note-icon">✦</span><p>Room for your next story.</p><small>Use Chapter Heading to add a chapter here.</small></div>
+    </aside>
+    <section id="viewport" class="document-viewport" aria-label="Manuscript workspace">
+      <div class="workspace-caption"><span id="workspace-title"></span><span>MANUSCRIPT</span></div>
+      <article id="pages" class="pages prose-paper" aria-label="Manuscript"></article>
+      <div class="end-hint">Your story continues here. <kbd>Enter</kbd> starts a paragraph.</div>
+    </section>
+  </main>
+  <footer class="status-bar"><span><span class="status-dot"></span> <span id="element-status">Normal Text</span></span><span id="document-stats"></span><span class="session-note">Local manuscript</span></footer>
+  <div id="notice" role="status" class="notice" hidden></div><button id="focus-exit" class="focus-exit" hidden>Exit Focus Mode · Esc</button>
+  <input id="import-picker" type="file" accept=".stf,.txt,.docx" hidden>
+  <dialog id="settings-dialog" class="feature-dialog"><form id="settings-form">
+    <span class="eyebrow">THIS MANUSCRIPT</span><h1>Manuscript settings</h1>
+    <section class="settings-section"><h2>Writing defaults</h2><div id="writing-fields" class="settings-fields"></div></section>
+    <section class="settings-section"><h2>Page layout</h2><div id="page-fields" class="settings-fields"></div></section>
+    <section class="settings-section"><h2>Paragraph styles</h2><label>Style <select id="custom-style"></select></label><div id="style-fields" class="settings-fields"></div><button type="button" id="reset-style">Reset selected style</button></section>
+    <section class="settings-section"><h2>Appearance</h2><div class="appearance-options"><label><input type="radio" name="appearance" value="light"> Light</label><label><input type="radio" name="appearance" value="dark"> Dark</label><label><input type="radio" name="appearance" value="system"> System</label></div>
+      <p><label><input type="checkbox" id="setting-focus"> Focus mode on open</label></p><label><input type="checkbox" id="setting-autosave" checked> Autosave manuscripts</label><p><label><input type="checkbox" id="setting-activity" checked> Record writing activity</label></p><label><input type="checkbox" id="set-defaults"> Use this layout and these styles for new manuscripts</label></section>
+    <p id="settings-error" role="alert" class="feature-error"></p><div class="dialog-actions"><button type="button" data-close>Cancel</button><button class="primary-button">Done</button></div>
+  </form></dialog>
+  <dialog id="paragraph-dialog" class="feature-dialog"><form id="paragraph-form"><span class="eyebrow">FORMATTING</span><h1>Paragraph formatting</h1><p>Blank fields use the paragraph style. A negative first-line indent creates a hanging indent.</p><div id="paragraph-fields" class="settings-fields"></div><section class="settings-section"><h2>Page margins</h2><div id="paragraph-margin-fields" class="settings-fields"></div></section><p id="paragraph-error" role="alert"></p><div class="dialog-actions"><button type="button" data-close>Cancel</button><button class="primary-button">Apply</button></div></form></dialog>
+  <dialog id="style-library-dialog" class="feature-dialog" aria-labelledby="style-library-title"><form id="style-library-form">
+    <span class="eyebrow">WRITING PREFERENCES</span><h1 id="style-library-title">Custom Paragraph Styles</h1>
+    <p>Saved styles are available in every manuscript. A manuscript keeps its own copy of each applied style.</p>
+    <label>Saved style <select id="saved-style" aria-label="Saved style"></select></label>
+    <div class="settings-fields"><label>Style name <input id="saved-style-name" maxlength="80" required></label><label>Style role <select id="saved-style-role"><option value="paragraph">Paragraph</option><option value="chapter">Chapter Heading</option></select></label></div>
+    <div id="saved-style-fields" class="settings-fields"></div>
+    <p><label><input type="checkbox" id="clear-style-overrides"> Clear direct formatting when applying</label></p>
+    <p id="style-library-error" role="status" class="feature-error"></p>
+    <div class="dialog-actions"><button type="button" id="duplicate-style">Duplicate</button><button type="button" id="delete-style">Delete</button><button type="button" data-close>Close</button><button type="submit" id="save-style">Save Style</button><button type="submit" id="save-apply-style" class="primary-button">Save &amp; Apply</button></div>
+  </form></dialog>
+  <dialog id="help-dialog" class="feature-dialog"><form method="dialog"><button class="dialog-close" aria-label="Close keyboard guide">×</button></form>
+    <span class="eyebrow">MAKE YOURSELF AT HOME</span><h1>Keyboard guide</h1>
+    <dl><dt>Enter</dt><dd>Start a prose paragraph.</dd><dt>Shift + Enter</dt><dd>Insert a line break within a paragraph.</dd><dt>⌘ / Ctrl + S</dt><dd>Save to the local library.</dd><dt>⌘ / Ctrl + F</dt><dd>Find. Enter or Shift + Enter navigates results.</dd><dt>⌘ / Ctrl + Shift + H</dt><dd>Find and replace.</dd><dt>⌘ / Ctrl + Shift + F</dt><dd>Toggle Focus Mode.</dd><dt>⌘ / Ctrl + B, I, U</dt><dd>Bold, italic, underline.</dd><dt>⌘ / Ctrl + Z</dt><dd>Undo. Add Shift to redo.</dd></dl>
+  </dialog>
+  <dialog id="statistics-dialog" class="feature-dialog"><header><h1>Writing Statistics</h1><button type="button" data-close aria-label="Close statistics">×</button></header><table><tbody id="statistics-rows"></tbody></table></dialog>
+  <dialog id="recovery-dialog" class="feature-dialog"><h1>Recovery checkpoint</h1><p id="recovery-info"></p><pre id="recovery-preview"></pre><div class="dialog-actions"><button data-close>Close</button><button id="recover-copy" class="primary-button">Open as new manuscript</button></div></dialog>
+  <dialog id="read-dialog" class="table-read" aria-labelledby="tr-title">
+    <header class="tr-header"><div><span class="eyebrow">READ TO ME</span><h1 id="tr-title">Read to Me</h1></div><button id="tr-close" class="secondary-button" data-close>Back to editor</button></header>
+    <section class="tr-transport" aria-label="Read to Me playback">
+      <div class="tr-status"><div id="tr-state" class="tr-state" role="status">Ready</div><strong id="tr-position"></strong></div>
+      <div class="tr-buttons"><button id="tr-play" class="primary-button">Play</button><button id="tr-pause" class="secondary-button">Pause</button><button id="tr-stop" class="secondary-button">Stop</button><button id="tr-previous" class="secondary-button">Previous</button><button id="tr-next" class="secondary-button">Next</button>
+        <label>Playback speed <select id="tr-speed"><option value=".5">0.5×</option><option value=".75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label></div>
+      <div class="tr-progress-row"><label for="tr-progress">Manuscript progress</label><progress id="tr-progress" value="0" max="100"></progress></div>
+      <div class="tr-navigation"><label>Voice <select id="tr-voice" aria-label="Voice"></select></label><label>Start from <select id="tr-start"><option value="manuscript">Beginning</option><option value="cursor">Cursor</option><option value="selection">Selected text</option></select></label></div>
+    </section>
+    <p id="tr-error" class="tr-error" role="alert" hidden></p><p id="tr-preview-text" class="tr-preview-heading"></p>
+    <footer class="tr-footer">Voice availability depends on the speech voices installed on this device. Speed changes apply at the next speech segment.</footer>
+  </dialog>
+<dialog id="profanity-dialog" class="feature-dialog profanity-panel" aria-labelledby="profanity-title">
+  <header><h1 id="profanity-title">Profanity Analyzer</h1><button id="profanity-close" aria-label="Close Profanity Analyzer">×</button></header>
+  <p>A customizable count of words and phrases.</p>
+  <p id="profanity-totals" role="status"></p>
+  <div class="profanity-filters"><label>Group <select id="profanity-group"></select></label><label>Variation <select id="profanity-variation"></select></label><label>Chapter <select id="profanity-chapter"></select></label></div>
+  <details><summary>Counts by group</summary><div id="profanity-counts"></div></details>
+  <details><summary>Counts by chapter</summary><ul id="profanity-chapter-counts"></ul></details>
+  <details><summary>Edit dictionary</summary>
+    <p>When groups share a variation, the first enabled group owns its count.</p>
+    <p id="profanity-status" role="status"></p>
+    <label>New group name <input id="profanity-new-group" maxlength="120"></label>
+    <button id="profanity-add-group">Add group</button><button id="profanity-reset">Reset dictionary</button>
+    <div id="profanity-dictionary"></div>
+  </details>
+  <h2>Occurrences</h2><ol id="profanity-occurrences"></ol><button id="profanity-more" hidden>Show more</button>
+</dialog>
+<dialog id="profanity-reset-confirm"><form method="dialog"><h1>Reset the profanity dictionary?</h1><p>Custom groups and variations will be replaced with the defaults.</p><div class="dialog-actions"><button autofocus>Cancel</button><button id="profanity-reset-yes" type="button" class="primary-button">Reset dictionary</button></div></form></dialog>
+  <style id="manuscript-style"></style><style id="print-style"></style>
+</body>
+</html>

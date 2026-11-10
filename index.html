@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <script src="./js/theme.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StoryForge · Your manuscripts</title>
+  <link rel="icon" href="./StoryForge.png">
+  <link rel="stylesheet" href="./css/editor.css">
+  <link rel="stylesheet" href="./css/home.css">
+  <link rel="stylesheet" href="./css/files.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/theme.css">
+  <link rel="stylesheet" href="./css/prose.css">
+  <link rel="stylesheet" href="./css/writing-statistics.css">
+  <script type="module" src="./app/library.js"></script>
+</head>
+
+<body class="library">
+  <header class="library-header"><img class="brand-logo" src="./StoryForge.png" width="44" height="44" alt="">
+    <div class="library-wordmark">StoryForge<small>FORGE STUDIOS</small></div>
+  </header>
+  <main class="library-main">
+    <section class="library-intro">
+      <h1>YOUR STORIES</h1>
+      <div class="library-actions"><button id="import" disabled class="secondary-button">Import
+          File</button><button id="new-manuscript" disabled class="primary-button">＋ New Story</button></div>
+    </section>
+    <div id="library-error" class="library-error" role="alert" hidden></div>
+    <div class="library-controls"><span id="library-count" class="library-count"></span><button id="writing-statistics"
+        class="quiet-button">Writing Statistics</button><label class="search-wrap"><span
+          aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search your manuscripts"
+          aria-label="Search manuscripts"></label></div>
+    <section id="script-grid" class="script-grid" aria-label="Manuscripts"></section>
+    <section id="empty-state" class="empty-state" hidden><span class="empty-mark" aria-hidden="true">✧</span>
+      <h2 id="empty-title">A room of your own.</h2>
+      <p id="empty-text">Create a manuscript or import a StoryForge, Word, or plain text file.</p>
+    </section>
+    <footer class="library-footer"><span>Manuscripts save locally. Export an STF file to keep a portable
+        copy.</span><span>StoryForge 1.0.0</span></footer>
+  </main>
+  <dialog id="delete-script-dialog" aria-labelledby="delete-title">
+    <h1 id="delete-title">Delete from the library?</h1>
+    <p id="delete-script-description"></p>
+    <p class="dialog-note">Exported files stay intact. You can undo this removal.</p>
+    <div class="dialog-actions"><button id="cancel-delete-script" class="secondary-button">Cancel</button><button
+        id="confirm-delete-script" class="primary-button">Delete</button></div>
+  </dialog>
+  <div id="library-notice" class="notice" role="status" hidden><span>Manuscript removed from the library. </span><button
+      id="undo-delete-script">Undo</button></div>
+  <input id="import-picker" type="file" accept=".stf,.txt,.docx" hidden>
+</body>
+
+</html>

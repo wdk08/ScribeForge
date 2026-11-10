@@ -1,0 +1,115 @@
+name: StoryForge desktop release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: storyforge-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    if: github.repository == 'wdk08/StoryForge'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            target: aarch64-apple-darwin
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+          - runner: windows-2022
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - run: npm ci
+      - name: Validate package metadata
+        shell: bash
+        run: npm run verify:release -- "$RELEASE_TAG"
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+      - name: Import configured Windows signing certificate
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          if (!$env:WINDOWS_CERTIFICATE -or !$env:WINDOWS_CERTIFICATE_PASSWORD) {
+            Write-Host 'StoryForge Windows signing is unconfigured.'
+            exit 0
+          }
+          $path = Join-Path $env:RUNNER_TEMP 'storyforge-signing.pfx'
+          try {
+            [IO.File]::WriteAllBytes($path, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE))
+            $password = ConvertTo-SecureString $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
+            $cert = Import-PfxCertificate -FilePath $path -Password $password -CertStoreLocation 'Cert:\CurrentUser\My'
+            if (!$cert.Thumbprint) { throw 'No Windows signing certificate was imported.' }
+            "STORYFORGE_WINDOWS_THUMBPRINT=$($cert.Thumbprint)" >> $env:GITHUB_ENV
+          } finally {
+            Remove-Item $path -ErrorAction SilentlyContinue
+          }
+      - name: Package StoryForge
+        run: node scripts/release-desktop.mjs package ${{ matrix.target }}
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          STORYFORGE_UPDATER_PUBLIC_KEY: ${{ vars.STORYFORGE_UPDATER_PUBLIC_KEY }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: storyforge-${{ matrix.target }}
+          path: dist/release-package/
+          if-no-files-found: error
+
+  publish:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: storyforge-*
+          path: dist/downloads
+      - name: Install updater signature verifier when configured
+        if: vars.STORYFORGE_UPDATER_PUBLIC_KEY != ''
+        run: sudo apt-get update && sudo apt-get install -y minisign
+      - name: Validate and assemble desktop assets
+        run: node scripts/release-desktop.mjs assemble "$RELEASE_TAG"
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          STORYFORGE_UPDATER_PUBLIC_KEY: ${{ vars.STORYFORGE_UPDATER_PUBLIC_KEY }}
+      - name: Publish complete release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" dist/release-assets/* \
+            --verify-tag --latest --title "StoryForge ${RELEASE_TAG} — Initial Release" \
+            --notes-file dist/release-notes.md

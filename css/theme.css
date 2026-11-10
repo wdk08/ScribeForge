@@ -1,0 +1,204 @@
+/* Central palette: existing light colors retain exact values; dark uses tonal tokens. */
+:root[data-theme="dark"]{
+  --sf-0002: #dedede22;
+  --sf-0003: #dedede33;
+  --sf-191919: #cbcbcb;
+  --sf-30282007: #ccbfb307;
+  --sf-30282016: #ccbfb316;
+  --sf-30282020: #ccbfb320;
+  --sf-302e2b: #bfbcb8;
+  --sf-34281b20: #d4c1ac20;
+  --sf-362a2255: #ccb9ad55;
+  --sf-40372d: #c1b5a7;
+  --sf-40382f: #bfb4a8;
+  --sf-413931: #bdb3a8;
+  --sf-42372c: #c3b4a5;
+  --sf-433831: #beafa6;
+  --sf-46301f20: #d3b49c20;
+  --sf-46301f25: #d3b49c25;
+  --sf-46392d: #c3b1a1;
+  --sf-463a2f: #c1b1a2;
+  --sf-4d3824: #cfb297;
+  --sf-4d4338: #b9ac9e;
+  --sf-526340: #a0b48b;
+  --sf-574734: #bfab93;
+  --sf-574737: #bca894;
+  --sf-5f5851: #a39b93;
+  --sf-642626: #a38bdd;
+  --sf-6b352f: #bfaff3;
+  --sf-6b4e3010: #c6a48010;
+  --sf-6c3b32: #c48a80;
+  --sf-6d6862: #c7c5c1;
+  --sf-702d2d: #b6a3f2;
+  --sf-746c63: #c7c3be;
+  --sf-763232: #baacf2;
+  --sf-78644d: #d3c7ba;
+  --sf-7b6651: #d1c5b9;
+  --sf-7c4935: #c38972;
+  --sf-7d6550: #d2c4b8;
+  --sf-7d6956: #cec3b8;
+  --sf-7f5a3b: #bd9471;
+  --sf-803737: #b9a6f3;
+  --sf-805638: #c09170;
+  --sf-80694f: #d2c5b6;
+  --sf-806c56: #cfc3b7;
+  --sf-813b3b: #b9a6f3;
+  --sf-816a51: #d1c4b6;
+  --sf-816b55: #cfc3b6;
+  --sf-816d58: #cec2b7;
+  --sf-82776d: #c3bdb7;
+  --sf-854535: #b9a6f3;
+  --sf-864235: #b9a6f3;
+  --sf-867e74: #c0bbb6;
+  --sf-876a52: #d1c1b3;
+  --sf-878178: #bebab5;
+  --sf-897764: #c8beb3;
+  --sf-8a735a: #cdc0b2;
+  --sf-8a9480: #b5bbae;
+  --sf-8b352d: #b9a6f3;
+  --sf-8b4d3c: #ddb9b0;
+  --sf-8b6840: #dbc7b0;
+  --sf-8b745a: #cdc0b2;
+  --sf-8b7b69: #c5bdb3;
+  --sf-8b8174: #c0bab3;
+  --sf-8c3939: #c3b5fa;
+  --sf-8c755c: #ccbfb1;
+  --sf-8c765f: #cabeb2;
+  --sf-8d5840: #dbbdaf;
+  --sf-8d633a: #ddc6af;
+  --sf-8d7a65: #c7bdb1;
+  --sf-8d857c: #bcb8b2;
+  --sf-8f8578: #beb9b1;
+  --sf-918678: #bfb8b0;
+  --sf-924a35: #ddbaaf;
+  --sf-928a80: #bbb6b0;
+  --sf-93897c: #bdb7af;
+  --sf-947f68: #c6bbae;
+  --sf-94877b: #beb6ae;
+  --sf-958574: #c1b8ae;
+  --sf-969087: #b8b4ae;
+  --sf-977c58: #cec0ac;
+  --sf-9a7b54: #d1c0aa;
+  --sf-9a8168: #c7b9ab;
+  --sf-9a886f: #c4b9ab;
+  --sf-9b8268: #c7b9aa;
+  --sf-9c743f: #dac5a9;
+  --sf-9c8363: #c9bbaa;
+  --sf-9d8c77: #c1b6a9;
+  --sf-9d8c78: #c0b6a9;
+  --sf-9f8a6c: #c6b9a8;
+  --sf-a18e78: #c1b5a6;
+  --sf-a28667: #c9b8a6;
+  --sf-a28a6d: #c6b7a6;
+  --sf-a39382: #bdb1a5;
+  --sf-a39787: #bab1a5;
+  --sf-a3988a: #b9b0a6;
+  --sf-a39a8e: #b7afa6;
+  --sf-a44c16: #c18d6e;
+  --sf-a49483: #bdb1a4;
+  --sf-a4998c: #b8afa5;
+  --sf-a58c63: #cbbca4;
+  --sf-a77846: #d8bea3;
+  --sf-aaa39b: #b1aaa3;
+  --sf-ab9983: #beb0a0;
+  --sf-ae8d68: #cbb69e;
+  --sf-b09d85: #bfaf9c;
+  --sf-ba965a: #d2bc97;
+  --sf-bbb1a8: #38322c;
+  --sf-bc8c2c: #d8c7a5;
+  --sf-bca38c: #c0a892;
+  --sf-bda27b: #c8b291;
+  --sf-c3ad94: #433526;
+  --sf-c6b6a3: #3d3226;
+  --sf-c9b7aa: #3a2e25;
+  --sf-d0c1ad: #3b3022;
+  --sf-d2c2ad: #3b3020;
+  --sf-d3c9bd: #342c22;
+  --sf-d6cbbc: #352c20;
+  --sf-d6cec2: #322b22;
+  --sf-d7cabc: #352b20;
+  --sf-d7cec1: #332b21;
+  --sf-d7d0c6: #302a22;
+  --sf-d8bc98: #44331d;
+  --sf-d8cbb9: #372d1f;
+  --sf-d9cbb9: #372c1e;
+  --sf-d9d5cd: #2d2922;
+  --sf-d9d5cf: #2c2823;
+  --sf-dac9b1: #3c2f1c;
+  --sf-dbb49e: #412a1c;
+  --sf-dbd0c2: #342a1e;
+  --sf-dbd2c6: #312a1f;
+  --sf-dcd8d0: #2c2921;
+  --sf-ddd3c5: #332a1e;
+  --sf-ddd8cf: #2d2920;
+  --sf-ded2c2: #352a1c;
+  --sf-ded3c4: #342a1d;
+  --sf-ded4c7: #32291d;
+  --sf-ded6ca: #30291e;
+  --sf-dedbd5: #2a2721;
+  --sf-dfd4c5: #332a1c;
+  --sf-dfd5c7: #32291d;
+  --sf-dfdcd6: #2a2721;
+  --sf-e0d9cf: #2e281e;
+  --sf-e0dad2: #2d271f;
+  --sf-e2d8cb: #31281c;
+  --sf-e2ded7: #2a261f;
+  --sf-e4b33155: #d2c29755;
+  --sf-e6ded2: #2f271a;
+  --sf-e8e1d7: #2d251a;
+  --sf-e8eddf: #242b18;
+  --sf-e9dcd7: #372857;
+  --sf-e9e5dd: #372857;
+  --sf-ead9bb: #382c18;
+  --sf-eae3d9: #2d2519;
+  --sf-eae6e1: #28221c;
+  --sf-eae7df: #29251b;
+  --sf-ece5d9: #2e2617;
+  --sf-edece9: #23211d;
+  --sf-eee4d6: #312515;
+  --sf-eeebe5: #27231a;
+  --sf-ef8d4177: #cfaa8e77;
+  --sf-f1ede4: #2a2416;
+  --sf-f2dfbb: #362b17;
+  --sf-f2ede4: #2b2315;
+  --sf-f3ddd0: #311f15;
+  --sf-f3e9da: #2f2414;
+  --sf-f4e1d5: #301f14;
+  --sf-f4f0e8: #2a2314;
+  --sf-f5e0d4: #301e14;
+  --sf-f5f1e9: #2a2213;
+  --sf-f5f4f0: #232118;
+  --sf-f8f5ef: #292112;
+  --sf-f8f5f0: #282012;
+  --sf-f8f7f4: #232016;
+  --sf-f9f7f2: #272112;
+  --sf-faf8f4: #272012;
+  --sf-faf9f6: #242014;
+  --sf-fcfaf6: #261f10;
+  --sf-fff: #1a1a1a;
+  --sf-fff0e9: #392953;
+  --sf-fff9ef: #271f11;
+  --sf-fffaf2: #271e11;
+  --sf-fffcf6: #261f10;
+  --sf-fffdf8: #251f10;
+  --sf-fffdf9: #251e10;
+  --sf-fffefa: #252110;
+}
+
+:root{--theme-accent:#49339a;--theme-on-accent:#fff;--theme-focus:#5940ad}
+:root[data-theme="dark"]{--theme-accent:#a95d5d;--theme-on-accent:#fff;--theme-focus:#e5a4a4}
+.primary-button{background:var(--theme-accent);color:var(--theme-on-accent)}
+.primary-button:hover:not(:disabled){background:var(--theme-accent);filter:brightness(.9)}
+:root[data-theme="dark"] .pages{caret-color:#f1c3c3}
+:root[data-theme="dark"] .notice{background:#e4ddd4;color:#24221f}
+:root[data-theme="dark"] button:focus-visible,:root[data-theme="dark"] input:focus-visible,:root[data-theme="dark"] textarea:focus-visible{outline-color:var(--theme-focus)}
+:root[data-theme="dark"] .search-highlight{background:#d9ae3555;outline-color:#e6c76b}
+:root[data-theme="dark"] .search-highlight.current{background:#ed914777;outline-color:#ffb273}
+@media print{
+  :root[data-theme]{color-scheme:light;background:#fff;color:#000}
+  :root[data-theme] .screenplay-page,:root[data-theme] .title-page{background:#fff!important;color:#000!important;border-color:#fff!important}
+  :root[data-theme] .screenplay-element,:root[data-theme] .title-print{color:#000!important}
+}
+
+:root[data-theme="dark"] dialog::backdrop{background:#0009}
+@media print{html:root[data-theme] body{background:#fff!important;color:#000!important}}

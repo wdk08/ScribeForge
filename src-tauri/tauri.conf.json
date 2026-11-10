@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "StoryForge",
+  "version": "1.0.0",
+  "identifier": "com.storyforge.desktop",
+  "build": {
+    "beforeDevCommand": "npm run build:desktop:dev",
+    "beforeBuildCommand": "npm run build:desktop",
+    "frontendDist": "../dist/desktop"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "StoryForge",
+        "width": 1440,
+        "height": 1000,
+        "minWidth": 720,
+        "minHeight": 540,
+        "dragDropEnabled": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost; object-src 'none'; base-uri 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "Productivity",
+    "shortDescription": "Your local prose writing room",
+    "longDescription": "Write, format, save and export manuscripts in your local writing room.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "12.0"
+    },
+    "createUpdaterArtifacts": false,
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    },
+    "license": "GPL-3.0-only",
+    "licenseFile": "../LICENSE",
+    "copyright": "Copyright (C) 2026 Forge Studios",
+    "fileAssociations": [
+      {
+        "ext": [
+          "stf"
+        ],
+        "name": "StoryForge Manuscript",
+        "description": "StoryForge Manuscript",
+        "role": "Editor",
+        "rank": "Owner",
+        "mimeType": "application/vnd.storyforge+json",
+        "contentTypes": [
+          "com.storyforge.manuscript"
+        ],
+        "exportedType": {
+          "identifier": "com.storyforge.manuscript",
+          "conformsTo": [
+            "public.json"
+          ]
+        }
+      }
+    ]
+  }
+}

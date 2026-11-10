@@ -1,0 +1,30 @@
+import { expect, test } from '@playwright/test';
+import { releaseAPI, releasePage } from '../../../js/storyforge/browser-download.js';
+
+test('the Pages build loads from /StoryForge/, shows Download and reopens an offline manuscript', async ({ page, context }) => {
+  const failures = [];
+  page.on('pageerror', error => failures.push(error.message));
+  await page.route(releaseAPI, route => route.fulfill({ status: 404, headers: { 'Access-Control-Allow-Origin': '*' } }));
+  await page.goto('./');
+  await expect(page).toHaveTitle(/StoryForge/);
+  await expect(page.locator('.brand-logo')).toHaveJSProperty('complete', true);
+  expect(await page.locator('.brand-logo').evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
+  await page.locator('.browser-download summary').click();
+  await expect(page.getByRole('link', { name: 'View StoryForge releases' })).toHaveAttribute('href', releasePage);
+  await page.locator('.browser-download summary').click();
+  await expect(page.locator('.library-header .local-label, .library-intro .eyebrow, .library-intro p')).toHaveCount(0);
+  await page.evaluate(() => navigator.serviceWorker.ready.then(() => null));
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+  await page.locator('#new-manuscript').click();
+  await expect(page).toHaveURL(/\/StoryForge\/editor\.html\?id=/);
+  const editor = page.locator('.ProseMirror');
+  await expect(editor).toBeEditable();
+  await editor.fill('A StoryForge production proof 🪶');
+  await expect(page.locator('#save-state')).toHaveText('Saved locally');
+  await context.setOffline(true);
+  await page.reload();
+  await expect(editor).toHaveText('A StoryForge production proof 🪶');
+  await expect(page.locator('.browser-download summary')).toHaveText('Download');
+  expect(await page.evaluate(async () => (await indexedDB.databases()).map(db => db.name))).toContain('com.storyforge.desktop.manuscripts');
+  expect(failures).toEqual([]);
+});

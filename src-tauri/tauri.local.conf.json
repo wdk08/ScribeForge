@@ -1,0 +1,19 @@
+{
+  "identifier": "com.storyforge.desktop.dev",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "StoryForge Dev",
+        "width": 1440,
+        "height": 1000,
+        "minWidth": 720,
+        "minHeight": 540,
+        "dragDropEnabled": false
+      }
+    ]
+  },
+  "bundle": {
+    "active": false
+  }
+}

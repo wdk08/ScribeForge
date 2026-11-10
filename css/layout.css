@@ -1,0 +1,64 @@
+/* Each long surface scrolls independently inside the application window. */
+html { height: 100%; overflow: hidden; }
+.home-button { display: inline-flex; align-items: center; color: inherit; text-decoration: none; }
+.startup-error { padding: 12px 26px; color: var(--sf-763232, #49339a); background: var(--sf-fff0e9, #f4effe); flex-shrink: 0; }
+.startup-error button, .startup-error a { margin-left: 12px; color: inherit; text-decoration: underline; }
+body.editor-app, body.library {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.editor-app > .app-header,
+.editor-app > .editing-bar,
+.editor-app > .format-toolbar,
+.editor-app > .document-banner,
+.library > .library-header { flex-shrink: 0; }
+.editor-app .workspace { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+.editor-app .document-viewport { min-height: 0; overscroll-behavior: contain; }
+.editor-app .status-bar { position: static; flex-shrink: 0; }
+.editor-app .outline {
+  display: flex;
+  flex-direction: column;
+  position: static;
+  align-self: stretch;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  padding: 24px 14px 18px;
+}
+.editor-app .outline[hidden] { display: none; }
+.editor-app .outline-heading { flex-shrink: 0; margin-bottom: 16px; }
+#scene-list { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; }
+.editor-app .outline-note { flex-shrink: 0; margin-top: 14px; padding-top: 14px; }
+.editor-app .scene-link strong { overflow-wrap: anywhere; text-transform: uppercase; }
+.sceneHeader { text-transform: uppercase; }
+.transition { text-transform: uppercase; text-align: right; }
+.transition.transition-left { text-align: left; }
+[data-type="character"], .preview-character { text-transform: uppercase; }
+.library .library-main { flex: 1; min-height: 0; width: 100%; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; }
+@media (max-height: 650px) { .editor-app .outline-note { display: none; } }
+@media (max-width: 720px) {
+  .editor-app .outline { position: absolute; top: 0; bottom: 0; left: 0; width: 210px; z-index: 4; box-shadow: 6px 0 20px var(--sf-34281b20, #34281b20); }
+}
+@media print {
+  html, body.editor-app, body.library { height: auto; overflow: visible; display: block; }
+  .editor-app .workspace, .editor-app .document-viewport, .library .library-main { height: auto; overflow: visible; display: block; }
+  .editor-app .document-banner { display: none; }
+}
+.disk-save-state { display: inline-block; font-size: 10px; color: var(--sf-763232, #49339a); margin-left: 10px; }
+.editor-app .save-state { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.library-controls #screenplay-folder { font-size: 11px; white-space: nowrap; }
+@media (max-width: 720px) { .editing-bar #screenplay-folder { font-size: 9px; } .disk-save-state { font-size: 9px; margin-left: 0; } }
+
+@media (max-width: 720px) { .editing-bar { overflow-x: auto; flex-shrink: 0; } .editing-bar > * { flex-shrink: 0; } }
+
+.sceneHeader { font-weight: 400; }
+.sceneHeader[data-scene-number]::before, .sceneHeader[data-scene-number]::after { content: attr(data-scene-number); position: absolute; top: 0; pointer-events: none; user-select: none; }
+.sceneHeader[data-scene-number]::before { right: calc(100% + 20px); }
+.sceneHeader[data-scene-number]::after { left: calc(100% + 24px); }
+.script-setting { display: flex; gap: 10px; align-items: center; font-size: 14px; margin: 22px 0; }
+.scene-number-setting { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.scene-number-setting button { font-size: 12px; border: 1px solid var(--sf-d9cbb9, #d9cbb9); border-radius: 5px; padding: 9px 12px; background: var(--sf-fffaf2, #fffaf2); }

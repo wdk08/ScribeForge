@@ -1,0 +1,54 @@
+# Dependencies and generated artifacts
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/
+test-results/
+playwright-report/
+coverage/
+*.log
+*.map
+.DS_Store
+.idea/
+.vscode/
+# Local credentials, grants and private signing material
+.env
+.env.*
+!.env.example
+.scriptforge-local.json
+*.stf
+*.key
+*.key.pub
+*.pem
+*.p12
+*.pfx
+*.cer
+*.mobileprovision
+*.keystore
+# Personal libraries / recovery / local diagnostics (never published)
+validation/
+local-data/
+user-data/
+backups/
+recovery/
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.autosave
+*.tmp
+*.swp
+# Curated screenplay/media fixtures under tests and assets remain included.
+# Put working user scripts in the chosen external screenplay folder.
+/scripts-local/
+/screenplays/
+/output/
+/tmp/
+
+/latest.json
+/release-assets.json
+/public-latest.json
+/release-review/
+
+.npm-cache/
