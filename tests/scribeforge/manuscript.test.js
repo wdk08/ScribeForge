@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { TextSelection } from 'prosemirror-state';
 import { undo, redo } from 'prosemirror-history';
 import { strFromU8, unzipSync } from 'fflate';
-import { dictionaryEntries, libraryActivity, writingActivity } from '../../js/storyforge/analysis.js';
-import { activeChapter, changeParagraph, editorState, findMatches, insertPageBreak, manuscriptIndex, replaceMatches, textChanges } from '../../js/storyforge/editing.js';
-import { analyzeProfanity, defaultProfanityGroups } from '../../js/storyforge/profanity-matching.js';
-import { readingSequence } from '../../js/storyforge/reading.js';
-import { exportDocx, exportEpub, exportText } from '../../js/storyforge/formats.js';
-import { decodeManuscript, encodeManuscript, newManuscript, plainText, schema, textDocument } from '../../js/storyforge/model.js';
+import { dictionaryEntries, libraryActivity, writingActivity } from '../../js/scribeforge/analysis.js';
+import { activeChapter, changeParagraph, editorState, findMatches, insertPageBreak, manuscriptIndex, replaceMatches, textChanges } from '../../js/scribeforge/editing.js';
+import { analyzeProfanity, defaultProfanityGroups } from '../../js/scribeforge/profanity-matching.js';
+import { readingSequence } from '../../js/scribeforge/reading.js';
+import { exportDocx, exportEpub, exportText } from '../../js/scribeforge/formats.js';
+import { decodeManuscript, encodeManuscript, newManuscript, plainText, schema, textDocument } from '../../js/scribeforge/model.js';
 
 const prose = () => {
   const m = newManuscript('My 漢字 novel 🪶');
@@ -42,14 +42,14 @@ test('STF preserves metadata, mixed marks, paragraph overrides, spacing and Unic
 test('STF rejects unknown nodes, fields, invalid CSS and future versions', () => {
   const future = prose();
   future.version = 2;
-  assert.throws(() => decodeManuscript(future), /Unsupported StoryForge document version 2/);
+  assert.throws(() => decodeManuscript(future), /Unsupported ScribeForge document version 2/);
   const invalid = prose();
   invalid.content.content.push({ type: 'script', content: [] });
   assert.throws(() => decodeManuscript(invalid), /unsupported content/);
   const css = prose();
   css.content.content[1].content[0].marks[1].attrs.value = 'Georgia; position:fixed';
   assert.throws(() => decodeManuscript(css), /unsupported content/);
-  assert.throws(() => decodeManuscript('<script>'), /valid StoryForge JSON/);
+  assert.throws(() => decodeManuscript('<script>'), /valid ScribeForge JSON/);
   assert.throws(() => decodeManuscript({ ...prose(), ignored: 'important' }), /unsupported content/);
 });
 

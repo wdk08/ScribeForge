@@ -7,7 +7,7 @@ function readGroups() {
   if (Array.isArray(stored) && stored.every(group => typeof group?.name === 'string' &&
     Array.isArray(group.variations) && group.variations.every(variant => typeof variant?.text === 'string'))) return stored;
   const groups = defaultProfanityGroups();
-  // Retain dictionary entries and disabled settings from the first StoryForge build.
+  // Retain dictionary entries and disabled settings from the first ScribeForge build.
   const disabled = new Set(getPreference('dictionary-disabled', []));
   try {
     for (const entry of dictionaryEntries(getPreference('dictionary', ''))) {
@@ -179,7 +179,7 @@ export function setupProfanityAnalyzer({ getDocument, navigate }) {
 
   groups = readGroups();
   window.addEventListener('storage', event => {
-    if (event.key !== 'storyforge.profanity-groups' && event.key !== null) return;
+    if (event.key !== 'scribeforge.profanity-groups' && event.key !== null) return;
     groups = readGroups();
     if (dialog.open) renderDictionary();
     refresh();

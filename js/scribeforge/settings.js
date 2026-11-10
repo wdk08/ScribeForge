@@ -111,7 +111,7 @@ export function setupSettings({ get, apply, focusEditor, applyParagraph, current
       if (!fontName(settings.font)) throw new Error('Enter a valid font name.');
       if ($('set-defaults').checked) setPreference('defaults', settings);
       for (const key of ['autosave', 'activity', 'focus']) setPreference(key, $(`setting-${key}`).checked);
-      window.storyForgeTheme.set(document.querySelector('[name=appearance]:checked')?.value ?? 'system');
+      window.scribeForgeTheme.set(document.querySelector('[name=appearance]:checked')?.value ?? 'system');
       apply(settings, author);
       $('settings-dialog').close();
       focusEditor();

@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { copyFile, mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { releaseInstallers, releasePage } from '../js/storyforge/browser-download.js';
+import { releaseInstallers, releasePage } from '../js/scribeforge/browser-download.js';
 
 export const targets = {
   'aarch64-apple-darwin': { bundle: 'dmg', extension: '.dmg', platform: 'darwin-aarch64' },
@@ -30,7 +30,7 @@ function only(paths, accept, label) {
 
 async function packageDesktop(target) {
   const platform = targets[target];
-  if (!platform) throw new Error('Invalid StoryForge release target.');
+  if (!platform) throw new Error('Invalid ScribeForge release target.');
   const environment = { ...process.env };
   for (const [key, value] of Object.entries(environment)) {
     if (value === '' && /^(?:APPLE_|TAURI_SIGNING_|WINDOWS_CERTIFICATE)/.test(key)) delete environment[key];
@@ -38,8 +38,8 @@ async function packageDesktop(target) {
   const mac = platform.bundle === 'dmg';
   const macSigned = Boolean(mac && environment.APPLE_CERTIFICATE && environment.APPLE_CERTIFICATE_PASSWORD && environment.APPLE_SIGNING_IDENTITY);
   const macNotarized = Boolean(macSigned && environment.APPLE_ID && environment.APPLE_PASSWORD && environment.APPLE_TEAM_ID);
-  const windowsSigned = Boolean(!mac && environment.STORYFORGE_WINDOWS_THUMBPRINT);
-  const signedUpdates = Boolean(environment.TAURI_SIGNING_PRIVATE_KEY && environment.STORYFORGE_UPDATER_PUBLIC_KEY);
+  const windowsSigned = Boolean(!mac && environment.SCRIBEFORGE_WINDOWS_THUMBPRINT);
+  const signedUpdates = Boolean(environment.TAURI_SIGNING_PRIVATE_KEY && environment.SCRIBEFORGE_UPDATER_PUBLIC_KEY);
   if (!macSigned) {
     for (const key of Object.keys(environment)) if (key.startsWith('APPLE_')) delete environment[key];
   } else if (!macNotarized) {
@@ -48,20 +48,20 @@ async function packageDesktop(target) {
   if (!signedUpdates) {
     delete environment.TAURI_SIGNING_PRIVATE_KEY;
     delete environment.TAURI_SIGNING_PRIVATE_KEY_PASSWORD;
-    console.warn('StoryForge updater credentials are incomplete. Packaging manual installers only.');
+    console.warn('ScribeForge updater credentials are incomplete. Packaging manual installers only.');
   }
-  if (mac && !macSigned) console.warn('StoryForge is using ad-hoc signing. The macOS installer will not be notarized.');
-  if (!mac && !windowsSigned) console.warn('The StoryForge Windows installer will be unsigned.');
+  if (mac && !macSigned) console.warn('ScribeForge is using ad-hoc signing. The macOS installer will not be notarized.');
+  if (!mac && !windowsSigned) console.warn('The ScribeForge Windows installer will be unsigned.');
 
   const config = { bundle: { createUpdaterArtifacts: signedUpdates } };
   if (mac && !macSigned) config.bundle.macOS = { signingIdentity: '-' };
   if (windowsSigned) config.bundle.windows = {
-    certificateThumbprint: environment.STORYFORGE_WINDOWS_THUMBPRINT,
+    certificateThumbprint: environment.SCRIBEFORGE_WINDOWS_THUMBPRINT,
     digestAlgorithm: 'sha256',
     timestampUrl: 'http://timestamp.digicert.com',
   };
-  if (signedUpdates) config.plugins = { updater: { endpoints: [updaterEndpoint], pubkey: environment.STORYFORGE_UPDATER_PUBLIC_KEY } };
-  const configPath = resolve(process.env.RUNNER_TEMP || 'dist', 'storyforge-release-config.json');
+  if (signedUpdates) config.plugins = { updater: { endpoints: [updaterEndpoint], pubkey: environment.SCRIBEFORGE_UPDATER_PUBLIC_KEY } };
+  const configPath = resolve(process.env.RUNNER_TEMP || 'dist', 'scribeforge-release-config.json');
   await writeFile(configPath, JSON.stringify(config));
   execFileSync(process.execPath, [resolve('node_modules/@tauri-apps/cli/tauri.js'), 'build',
     '--target', target, '--bundles', platform.bundle, '--config', configPath], { stdio: 'inherit', env: environment });
@@ -84,7 +84,7 @@ async function packageDesktop(target) {
 }
 
 export async function assembleRelease(input, output, tag, publicKey) {
-  const version = tag.match(/^v(\d+\.\d+\.\d+)$/)?.[1];
+  const version = tag.match(/^v(\d+\.\d+\.\d+)(?:-scribeforge)?$/)?.[1];
   if (!version) throw new Error('Invalid release tag.');
   const files = await filesUnder(input);
   const descriptors = files.filter(file => basename(file) === 'metadata.json');
@@ -96,7 +96,7 @@ export async function assembleRelease(input, output, tag, publicKey) {
   const signingNotes = [];
   await mkdir(output, { recursive: true });
   async function include(directory, name) {
-    if (typeof name !== 'string' || basename(name) !== name || !name.startsWith('StoryForge')) throw new Error('Invalid StoryForge artifact name.');
+    if (typeof name !== 'string' || basename(name) !== name || !name.startsWith('ScribeForge')) throw new Error('Invalid ScribeForge artifact name.');
     const source = join(directory, name);
     const info = await stat(source);
     if (!info.isFile() || info.size === 0 || copied.has(name)) throw new Error(`Invalid or duplicate release asset: ${name}`);
@@ -115,14 +115,14 @@ export async function assembleRelease(input, output, tag, publicKey) {
     assets.push(asset);
     signingNotes.push(`- ${targets[target].platform} installer: ${signing}`);
     if (updateAsset) {
-      if (!publicKey) throw new Error('The StoryForge updater public key is missing.');
+      if (!publicKey) throw new Error('The ScribeForge updater public key is missing.');
       const update = updateAsset === installer ? asset : await include(directory, updateAsset);
       await include(directory, `${updateAsset}.sig`);
       const signature = (await readFile(join(directory, `${updateAsset}.sig`), 'utf8')).trim();
       const pubkeyText = Buffer.from(publicKey.trim(), 'base64').toString('utf8');
       const sigText = Buffer.from(signature, 'base64').toString('utf8');
       const pubkeyLine = pubkeyText.split(/\r?\n/)[1];
-      if (!pubkeyLine || !sigText.startsWith('untrusted comment:')) throw new Error('Invalid StoryForge updater key or signature format.');
+      if (!pubkeyLine || !sigText.startsWith('untrusted comment:')) throw new Error('Invalid ScribeForge updater key or signature format.');
       const verificationSignature = join(directory, 'verify.minisig');
       await writeFile(verificationSignature, sigText);
       execFileSync('minisign', ['-Vm', join(directory, updateAsset), '-P', pubkeyLine, '-x', verificationSignature], { stdio: 'inherit' });
@@ -142,7 +142,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const [command, arg] = process.argv.slice(2);
   if (command === 'package') await packageDesktop(arg);
   else if (command === 'assemble') {
-    const notes = await assembleRelease('dist/downloads', 'dist/release-assets', arg, process.env.STORYFORGE_UPDATER_PUBLIC_KEY);
+    const notes = await assembleRelease('dist/downloads', 'dist/release-assets', arg, process.env.SCRIBEFORGE_UPDATER_PUBLIC_KEY);
     const releaseNotes = await readFile(`releases/${arg}.md`, 'utf8');
     await writeFile('dist/release-notes.md', `${releaseNotes.trimEnd()}\n\n### Installer signing\n\n${notes.join('\n')}\n`);
   } else throw new Error('Expected package or assemble.');

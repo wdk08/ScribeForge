@@ -15,7 +15,7 @@ createServer(async (req, res) => {
     }
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const name = pathname === '/' ? '/index.html' : pathname;
-    const fromSource = /^\/(?:index\.html|editor\.html|StoryForge\.png|js\/theme\.js|css\/[\w-]+\.css)$/.test(name);
+    const fromSource = /^\/(?:index\.html|editor\.html|ScribeForge\.png|js\/theme\.js|css\/[\w-]+\.css)$/.test(name);
     const root = fromSource ? resolve(source) : base;
     const path = resolve(root, `.${name}`);
     if (!path.startsWith(root + sep) || (!fromSource && !/^\/app\/[\w.-]+$/.test(name))) {
@@ -26,4 +26,4 @@ createServer(async (req, res) => {
       'Content-Security-Policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'self'",
     }).end(data);
   } catch { res.writeHead(404).end('Not found'); }
-}).listen(port, '127.0.0.1', () => console.log(`StoryForge Browser Dev is available at http://localhost:${port}`));
+}).listen(port, '127.0.0.1', () => console.log(`ScribeForge Browser Dev is available at http://localhost:${port}`));

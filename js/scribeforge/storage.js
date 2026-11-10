@@ -1,8 +1,10 @@
 import { decodeManuscript, validId } from './model.js';
 
 export const desktop = globalThis.window?.__TAURI__;
-const namespace = typeof __STORYFORGE_DEV__ !== 'undefined' && __STORYFORGE_DEV__ ? 'com.storyforge.desktop.dev' : 'com.storyforge.desktop';
+const namespace = typeof __SCRIBEFORGE_DEV__ !== 'undefined' && __SCRIBEFORGE_DEV__ ? 'com.scribeforge.desktop.dev' : 'com.scribeforge.desktop';
 export const DATABASE_NAME = `${namespace}.manuscripts`;
+
+const legacyDatabase = namespace.endsWith('.dev') ? 'com.storyforge.desktop.dev.manuscripts' : 'com.storyforge.desktop.manuscripts';
 
 function requestResult(request) {
   return new Promise((resolve, reject) => {
@@ -19,17 +21,75 @@ function transactionDone(transaction) {
   });
 }
 
-export function browserStore(indexedDB = globalThis.indexedDB, databaseName = DATABASE_NAME) {
+async function legacyRecords(indexedDB, name) {
+  const request = indexedDB.open(name);
+  let missing = false;
+  request.onupgradeneeded = () => {
+    // An absent library is normal. Abort the creation of an empty old database.
+    missing = true;
+    request.transaction.abort();
+  };
+  const db = await requestResult(request).catch(error => {
+    if (missing && error?.name === 'AbortError') return null;
+    throw error;
+  });
+  if (!db) return [];
+  try {
+    return await requestResult(db.transaction('manuscripts').objectStore('manuscripts').getAll());
+  } finally { db.close(); }
+}
+
+async function migrateLibrary(indexedDB, db, source) {
+  if (!source) return;
+  const marker = 'rename-v1';
+  const finished = await requestResult(db.transaction('migrations').objectStore('migrations').get(marker));
+  if (finished) return;
+  const records = await legacyRecords(indexedDB, source);
+  const transaction = db.transaction(['manuscripts', 'migrations'], 'readwrite', { durability: 'strict' });
+  const done = transactionDone(transaction);
+  try {
+    const migrations = transaction.objectStore('migrations');
+    // Another tab may have completed the copy while we read the old database.
+    if (!await requestResult(migrations.get(marker))) {
+      const store = transaction.objectStore('manuscripts');
+      for (const record of records) {
+        const existing = await requestResult(store.get(record.id));
+        if (!existing) store.add(record);
+        else if (JSON.stringify(existing) !== JSON.stringify(record)) {
+          const id = crypto.randomUUID();
+          const copy = document => document == null ? document : { ...document, documentId: id };
+          store.add({ ...record, id, current: copy(record.current), previous: copy(record.previous) });
+        }
+      }
+      migrations.add(true, marker);
+    }
+    await done;
+  } catch (error) {
+    try { transaction.abort(); } catch {}
+    await done.catch(() => {});
+    throw error;
+  }
+}
+
+export function browserStore(indexedDB = globalThis.indexedDB, databaseName = DATABASE_NAME, source = databaseName === DATABASE_NAME ? legacyDatabase : null) {
   let connection;
   async function open() {
     if (!indexedDB) throw new Error('IndexedDB is unavailable in this browser.');
     if (!connection) {
-      const request = indexedDB.open(databaseName, 1);
+      const request = indexedDB.open(databaseName, 2);
       request.onupgradeneeded = () => {
-        request.result.createObjectStore('manuscripts', { keyPath: 'id' });
+        if (!request.result.objectStoreNames.contains('manuscripts')) {
+          request.result.createObjectStore('manuscripts', { keyPath: 'id' });
+        }
+        request.result.createObjectStore('migrations');
       };
-      connection = requestResult(request).then(db => {
+      connection = requestResult(request).then(async db => {
         db.onversionchange = () => { db.close(); connection = null; };
+        try { await migrateLibrary(indexedDB, db, source); }
+        catch (error) {
+          db.close();
+          throw new Error('The previous library could not be copied. Your original documents are still in place.', { cause: error });
+        }
         return db;
       }).catch(error => { connection = null; throw error; });
     }

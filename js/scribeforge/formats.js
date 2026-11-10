@@ -255,7 +255,7 @@ export function importDocx(bytes, fallbackTitle) {
       const size = pageDimensions({ pageSize: preset });
       if (Math.abs(size.width - width) < 0.1 && Math.abs(size.height - height) < 0.1) manuscript.settings.pageSize = preset;
     }
-  } else if (page) warnings.add('Unsupported page dimensions use StoryForge defaults.');
+  } else if (page) warnings.add('Unsupported page dimensions use ScribeForge defaults.');
   for (const side of ['left', 'right', 'top', 'bottom']) {
     const value = scaled(attr(margin, side), 20);
     if (value >= 0 && value <= 288) manuscript.settings[side] = value;
@@ -281,7 +281,7 @@ export function importDocx(bytes, fallbackTitle) {
     };
   }
   const defaultStyle = [...styleLookup].find(([, definition]) => attr(definition, 'type') === 'paragraph' && attr(definition, 'default') === '1')?.[0] ?? 'Normal';
-  // Map conventional Word styles to their StoryForge equivalents. Other Word
+  // Map conventional Word styles to their ScribeForge equivalents. Other Word
   // styles carry their supported paragraph and run values as explicit overrides.
   for (const [id, definition] of styleLookup) {
     const kind = knownStyles.get(id?.toLowerCase());
@@ -298,7 +298,7 @@ export function importDocx(bytes, fallbackTitle) {
     const inheritedFields = Object.entries({ ...defaultsParagraph, ...style.paragraph }).filter(([key, value]) => value !== presentation[key]);
     const props = { style: kind, ...Object.fromEntries(inheritedFields), ...readParagraph(pp) };
     if (local(pp, 'numPr')) warnings.add('List numbering was omitted. Item text is preserved.');
-    if (local(pp, 'sectPr')) warnings.add('Multiple Word sections use one StoryForge page layout.');
+    if (local(pp, 'sectPr')) warnings.add('Multiple Word sections use one ScribeForge page layout.');
     let inlines = [];
     let afterBreak = false;
     const flush = () => { blocks.push(schema.nodes.paragraph.create(props, inlines)); inlines = []; };

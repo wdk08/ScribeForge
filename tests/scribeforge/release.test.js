@@ -3,11 +3,11 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { installerPreference, releaseInstallers, releasePage } from '../../js/storyforge/browser-download.js';
+import { installerPreference, releaseInstallers, releasePage } from '../../js/scribeforge/browser-download.js';
 import { assembleRelease, targets } from '../../scripts/release-desktop.mjs';
 
-const names = ['StoryForge_test_aarch64.dmg', 'StoryForge_test_x86_64.dmg', 'StoryForge_test_x64-setup.exe'];
-const tag = 'v1.0.0';
+const names = ['ScribeForge_test_aarch64.dmg', 'ScribeForge_test_x86_64.dmg', 'ScribeForge_test_x64-setup.exe'];
+const tag = 'v1.0.0-scribeforge';
 const assets = names.map(name => ({
   name, size: 42, state: 'uploaded', browser_download_url: releasePage.replace('/latest', `/download/${tag}/${name}`),
 }));
@@ -17,7 +17,7 @@ test('download discovery uses actual published assets, rejects other repositorie
   assert.deepEqual(Object.values(releaseInstallers(release)), assets.map(asset => asset.browser_download_url));
   assert.throws(() => releaseInstallers({ ...release, draft: true }), /stable published release/);
   assert.throws(() => releaseInstallers({ ...release, assets: [...assets, assets[0]] }), /safely/);
-  const wrongRepo = { ...assets[0], browser_download_url: assets[0].browser_download_url.replace('/StoryForge/', '/ScriptForge/') };
+  const wrongRepo = { ...assets[0], browser_download_url: assets[0].browser_download_url.replace('/ScribeForge/', '/ScriptForge/') };
   assert.throws(() => releaseInstallers({ ...release, assets: [wrongRepo, ...assets.slice(1)] }), /location/);
   assert.equal(installerPreference('Windows', ''), 'windows');
   assert.equal(installerPreference('macOS', 'arm'), 'macArm');
@@ -26,7 +26,7 @@ test('download discovery uses actual published assets, rejects other repositorie
 });
 
 test('release assembly requires all three packages and leaves updater output disabled without signing', async t => {
-  const scratch = await mkdtemp(join(tmpdir(), 'storyforge-release-'));
+  const scratch = await mkdtemp(join(tmpdir(), 'scribeforge-release-'));
   t.after(() => rm(scratch, { recursive: true, force: true }));
   const packages = join(scratch, 'packages');
   const output = join(scratch, 'output');

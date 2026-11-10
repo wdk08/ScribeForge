@@ -6,7 +6,7 @@ import { build, context } from 'esbuild';
 const root = fileURLToPath(new URL('..', import.meta.url));
 export const legalFiles = ['LICENSE', 'COPYRIGHT', 'THIRD_PARTY_NOTICES.md', 'SOURCE_CODE.md'];
 const assets = [
-  'index.html', 'editor.html', 'StoryForge.png', 'js/theme.js',
+  'index.html', 'editor.html', 'ScribeForge.png', 'js/theme.js',
   ...['editor', 'home', 'files', 'layout', 'editor-features', 'theme', 'prose', 'table-read', 'profanity', 'writing-statistics'].map(name => `css/${name}.css`),
 ];
 
@@ -30,9 +30,9 @@ export async function prepare(target, dev, watch = false) {
   }
   await copyNotices(output);
   const options = {
-    absWorkingDir: root, entryPoints: { library: 'js/storyforge/home.js', manuscript: 'js/storyforge/editor.js' },
+    absWorkingDir: root, entryPoints: { library: 'js/scribeforge/home.js', manuscript: 'js/scribeforge/editor.js' },
     bundle: true, format: 'esm', target: ['safari15.6', 'chrome105', 'firefox103'], outdir: resolve(output, 'app'),
-    define: { __STORYFORGE_DEV__: JSON.stringify(dev), __STORYFORGE_OFFLINE__: 'false' },
+    define: { __SCRIBEFORGE_DEV__: JSON.stringify(dev), __SCRIBEFORGE_OFFLINE__: 'false' },
     legalComments: 'linked', minify: !dev,
   };
   if (watch) {
@@ -40,7 +40,7 @@ export async function prepare(target, dev, watch = false) {
     await devBundle.rebuild();
     await devBundle.watch();
   } else await build(options);
-  console.log(`Prepared StoryForge ${target}: ${output}`);
+  console.log(`Prepared ScribeForge ${target}: ${output}`);
   return output;
 }
 

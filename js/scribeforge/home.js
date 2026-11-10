@@ -22,7 +22,7 @@ function cardMenu(item, title) {
   const options = document.createElement('div');
   options.className = 'card-menu-options';
   const exportButton = document.createElement('button');
-  exportButton.textContent = 'Export as StoryForge (.stf)';
+  exportButton.textContent = 'Export as ScribeForge (.stf)';
   exportButton.addEventListener('click', async () => {
     menu.open = false;
     try {

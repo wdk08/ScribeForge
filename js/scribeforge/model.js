@@ -240,9 +240,9 @@ function validBlock(block) {
 export function decodeManuscript(value) {
   let document;
   try { document = typeof value === 'string' ? JSON.parse(value.replace(/^\uFEFF/, '')) : value; }
-  catch { throw new Error('This file does not contain valid StoryForge JSON.'); }
-  if (!record(document) || document.format !== 'storyforge') throw new Error('This is not a StoryForge manuscript.');
-  if (document.version !== 1) throw new Error(`Unsupported StoryForge document version ${String(document.version)}.`);
+  catch { throw new Error('This file does not contain valid ScribeForge JSON.'); }
+  if (!record(document) || document.format !== 'storyforge') throw new Error('This is not a ScribeForge manuscript.');
+  if (document.version !== 1) throw new Error(`Unsupported ScribeForge document version ${String(document.version)}.`);
   if (!keys(document, ['format', 'version', 'documentId', 'metadata', 'settings', 'content']) || !validId(document.documentId) ||
     !keys(document.metadata, ['title', 'author']) || !Object.values(document.metadata).every(shortText) ||
     !keys(document.content, ['type', 'content']) || document.content.type !== 'doc' ||

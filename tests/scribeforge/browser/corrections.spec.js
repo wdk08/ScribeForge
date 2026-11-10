@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { newManuscript } from '../../../js/storyforge/model.js';
+import { newManuscript } from '../../../js/scribeforge/model.js';
 
 const editor = page => page.getByRole('textbox', { name: 'Manuscript editor' });
 const font = page => page.getByRole('combobox', { name: 'Font family', exact: true });
@@ -66,11 +66,11 @@ test('font and size resolve at the caret, show mixed selections, and preserve co
     root.dispatchEvent(new ClipboardEvent('copy', { clipboardData: clipboard, bubbles: true }));
     const last = root.lastElementChild;
     window.getSelection().collapse(last, 0);
-    window.storyforgeTestClipboard = clipboard;
+    window.scribeforgeTestClipboard = clipboard;
   });
   await expect(font(page)).toHaveValue('Georgia');
   await page.evaluate(() => document.querySelector('.ProseMirror').dispatchEvent(new ClipboardEvent('paste', {
-    clipboardData: window.storyforgeTestClipboard, bubbles: true, cancelable: true,
+    clipboardData: window.scribeforgeTestClipboard, bubbles: true, cancelable: true,
   })));
   await expect(editor(page).locator('p').last().locator('span[style*="Arial"]')).toContainText('A styled');
   await save(page);
@@ -108,7 +108,7 @@ test('custom paragraph styles keep overrides, round-trip as chapters, and surviv
 
   await page.locator('#export').click();
   const download = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'StoryForge (.stf)', exact: true }).click();
+  await page.getByRole('button', { name: 'ScribeForge (.stf)', exact: true }).click();
   const portable = JSON.parse(await readFile(await (await download).path()));
   const other = await browser.newPage();
   await open(other, portable);
@@ -149,7 +149,7 @@ test('the library exports, confirms deletion, restores via Undo, and aggregates 
   const menu = page.locator('summary[aria-label="Options for Library Proof"]');
   await menu.click();
   const download = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export as StoryForge (.stf)' }).click();
+  await page.getByRole('button', { name: 'Export as ScribeForge (.stf)' }).click();
   const portable = await readFile(await (await download).path());
   expect(JSON.parse(portable).metadata.title).toBe('Library Proof');
   await menu.click();

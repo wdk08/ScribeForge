@@ -3,9 +3,19 @@ import { readImport } from './formats.js';
 import { desktop } from './storage.js';
 import { setupBrowserDownload } from './browser-download.js';
 
-if (typeof window !== 'undefined') setupBrowserDownload();
+if (typeof window !== 'undefined') {
+  setupBrowserDownload();
+  try {
+    const previousKeys = Object.keys(localStorage).filter(key => key.startsWith('storyforge.'));
+    for (const key of previousKeys) {
+      const value = localStorage.getItem(key);
+      const destination = `scribeforge.${key.slice('storyforge.'.length)}`;
+      if (value !== null && localStorage.getItem(destination) === null) localStorage.setItem(destination, value);
+    }
+  } catch { /* A browser can restrict access to preferences. */ }
+}
 
-if (typeof __STORYFORGE_OFFLINE__ !== 'undefined' && __STORYFORGE_OFFLINE__ && 'serviceWorker' in navigator) {
+if (typeof __SCRIBEFORGE_OFFLINE__ !== 'undefined' && __SCRIBEFORGE_OFFLINE__ && 'serviceWorker' in navigator) {
   void navigator.serviceWorker.register('./offline.js').catch(error => console.warn('Offline shell setup failed:', error));
 }
 
@@ -14,11 +24,11 @@ export const errorMessage = error => error?.message ?? String(error);
 export const documentURL = id => `./editor.html?id=${encodeURIComponent(id)}`;
 
 export function getPreference(key, fallback) {
-  try { return JSON.parse(localStorage.getItem(`storyforge.${key}`)) ?? fallback; }
+  try { return JSON.parse(localStorage.getItem(`scribeforge.${key}`)) ?? fallback; }
   catch { return fallback; }
 }
 export function setPreference(key, value) {
-  localStorage.setItem(`storyforge.${key}`, JSON.stringify(value));
+  localStorage.setItem(`scribeforge.${key}`, JSON.stringify(value));
 }
 export function manuscriptDefaults() {
   const settings = getPreference('defaults', defaultSettings);
@@ -99,14 +109,14 @@ export function connectImport(store, navigate, showError) {
       catch (error) { return { error: `${entry.name} · ${errorMessage(error)}` }; }
     });
   });
-  desktop.event.listen('storyforge-open-requested', openAssociated)
+  desktop.event.listen('scribeforge-open-requested', openAssociated)
     .then(openAssociated).catch(error => showError(errorMessage(error)));
 }
 
 export function connectDesktopClose(flush, showError) {
   if (!desktop) return;
   let closing = false;
-  desktop.event.listen('storyforge-close-requested', async () => {
+  desktop.event.listen('scribeforge-close-requested', async () => {
     if (closing) return;
     closing = true;
     try {

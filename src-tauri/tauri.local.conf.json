@@ -1,10 +1,10 @@
 {
-  "identifier": "com.storyforge.desktop.dev",
+  "identifier": "com.scribeforge.desktop.dev",
   "app": {
     "windows": [
       {
         "label": "main",
-        "title": "StoryForge Dev",
+        "title": "ScribeForge Dev",
         "width": 1440,
         "height": 1000,
         "minWidth": 720,

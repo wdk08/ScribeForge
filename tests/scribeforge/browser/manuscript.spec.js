@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { strFromU8, unzipSync } from 'fflate';
-import { newManuscript } from '../../../js/storyforge/model.js';
+import { newManuscript } from '../../../js/scribeforge/model.js';
 
 const editor = page => page.getByRole('textbox', { name: 'Manuscript editor' });
 const importFile = (page, name, buffer, mimeType = 'application/octet-stream') =>
@@ -20,12 +20,12 @@ async function exported(page, format) {
   return readFile(await download.path());
 }
 
-test('StoryForge library, logo, rich-text autosave, chapter navigation and editing history', async ({ page }) => {
+test('ScribeForge library, logo, rich-text autosave, chapter navigation and editing history', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await openText(page, 'Chapter One\nOne two three\nChapter Two: The End\nLast words');
   await expect(page.getByRole('navigation', { name: 'Chapters' }).getByRole('button')).toHaveCount(2);
-  await expect(page.locator('header .brand-logo')).toHaveAttribute('src', './StoryForge.png');
+  await expect(page.locator('header .brand-logo')).toHaveAttribute('src', './ScribeForge.png');
   const first = page.getByRole('button', { name: /Chapter One/ });
   const second = page.getByRole('button', { name: /Chapter Two/ });
   await expect(first).toContainText('3 words');
@@ -113,7 +113,7 @@ test('DOCX import and exports round-trip styling, Unicode, page breaks and book 
 test('PDF printing uses custom paper, preserves Unicode, and honors manual breaks', async ({ page, browserName }) => {
   test.skip(browserName !== 'chromium', 'PDF capture requires Chromium.');
   const manuscript = newManuscript('Print sample', undefined, 'Chapter 1\nSnow & rain 雪 🐉\fChapter 2\nNext page.');
-  manuscript.settings = { ...manuscript.settings, pageSize: 'custom', width: 450, height: 620, header: 'StoryForge Proof', footer: 'Draft', pageNumbers: true };
+  manuscript.settings = { ...manuscript.settings, pageSize: 'custom', width: 450, height: 620, header: 'ScribeForge Proof', footer: 'Draft', pageNumbers: true };
   await page.goto('/');
   await importFile(page, 'Print.stf', Buffer.from(JSON.stringify(manuscript)));
   await expect(editor(page)).toContainText('Snow & rain');

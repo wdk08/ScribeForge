@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><script src="./js/theme.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>StoryForge · Manuscript editor</title><link rel="icon" href="./StoryForge.png">
+  <title>ScribeForge · Manuscript editor</title><link rel="icon" href="./ScribeForge.png">
   <link rel="stylesheet" href="./css/editor.css"><link rel="stylesheet" href="./css/files.css"><link rel="stylesheet" href="./css/layout.css">
   <link rel="stylesheet" href="./css/editor-features.css"><link rel="stylesheet" href="./css/table-read.css"><link rel="stylesheet" href="./css/profanity.css"><link rel="stylesheet" href="./css/theme.css"><link rel="stylesheet" href="./css/prose.css">
   <script type="module" src="./app/manuscript.js"></script>
@@ -11,15 +11,15 @@
 <body class="editor-app">
   <header class="app-header">
     <a id="home" href="./index.html" class="home-button" title="Manuscript library" aria-label="Home">←</a>
-    <img class="brand-logo" src="./StoryForge.png" width="44" height="44" alt="">
-    <div class="document-heading"><div class="brand-name">STORYFORGE <span class="stage-badge">MANUSCRIPT EDITOR</span></div>
+    <img class="brand-logo" src="./ScribeForge.png" width="44" height="44" alt="">
+    <div class="document-heading"><div class="brand-name">SCRIBEFORGE <span class="stage-badge">MANUSCRIPT EDITOR</span></div>
       <input id="document-title" maxlength="200" aria-label="Manuscript title" disabled>
       <span id="save-state" class="save-state" role="status">Opening manuscript…</span></div>
     <div class="header-actions"><button id="save" class="quiet-button" disabled>Save</button><details class="export-menu"><summary id="export" class="primary-button">Export <span aria-hidden="true">↗</span></summary>
-      <div class="export-options"><button data-export="stf">StoryForge (.stf)</button><button data-export="pdf">PDF (.pdf)</button><button data-export="docx">Word (.docx)</button><button data-export="epub">Ebook (.epub)</button><button data-export="txt">Plain text (.txt)</button></div></details></div>
+      <div class="export-options"><button data-export="stf">ScribeForge (.stf)</button><button data-export="pdf">PDF (.pdf)</button><button data-export="docx">Word (.docx)</button><button data-export="epub">Ebook (.epub)</button><button data-export="txt">Plain text (.txt)</button></div></details></div>
   </header>
   <nav class="editing-bar" aria-label="Editing tools">
-    <details class="file-menu toolbar-menu"><summary>File</summary><div class="file-menu-items"><button id="new-document">New manuscript</button><button id="import">Import manuscript…</button><button id="save-copy">Save as new manuscript…</button><button id="recovery">Recovery checkpoint</button><button data-export="stf">Export StoryForge copy</button></div></details>
+    <details class="file-menu toolbar-menu"><summary>File</summary><div class="file-menu-items"><button id="new-document">New manuscript</button><button id="import">Import manuscript…</button><button id="save-copy">Save as new manuscript…</button><button id="recovery">Recovery checkpoint</button><button data-export="stf">Export ScribeForge copy</button></div></details>
     <details class="tools-menu toolbar-menu"><summary>Tools</summary><div class="file-menu-items"><button id="find-open">Find &amp; Replace</button><button id="statistics">Writing Statistics</button><button id="read-to-me">Read to Me</button><button id="profanity">Profanity Analyzer</button><button id="focus-mode">Focus Mode</button><button id="paste-plain" aria-pressed="false">Paste as Plain Text</button></div></details>
     <div class="history-tools"><button id="undo" aria-label="Undo">↶</button><button id="redo" aria-label="Redo">↷</button></div>
     <span class="toolbar-divider"></span>

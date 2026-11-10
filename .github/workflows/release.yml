@@ -1,19 +1,19 @@
-name: StoryForge desktop release
+name: ScribeForge desktop release
 
 on:
   push:
-    tags: ['v*.*.*']
+    tags: ['v1.0.0-scribeforge']
 
 permissions:
   contents: read
 
 concurrency:
-  group: storyforge-release-${{ github.ref }}
+  group: scribeforge-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   package:
-    if: github.repository == 'wdk08/StoryForge'
+    if: github.repository == 'wdk08/ScribeForge'
     strategy:
       fail-fast: false
       matrix:
@@ -50,20 +50,20 @@ jobs:
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         run: |
           if (!$env:WINDOWS_CERTIFICATE -or !$env:WINDOWS_CERTIFICATE_PASSWORD) {
-            Write-Host 'StoryForge Windows signing is unconfigured.'
+            Write-Host 'ScribeForge Windows signing is unconfigured.'
             exit 0
           }
-          $path = Join-Path $env:RUNNER_TEMP 'storyforge-signing.pfx'
+          $path = Join-Path $env:RUNNER_TEMP 'scribeforge-signing.pfx'
           try {
             [IO.File]::WriteAllBytes($path, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE))
             $password = ConvertTo-SecureString $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
             $cert = Import-PfxCertificate -FilePath $path -Password $password -CertStoreLocation 'Cert:\CurrentUser\My'
             if (!$cert.Thumbprint) { throw 'No Windows signing certificate was imported.' }
-            "STORYFORGE_WINDOWS_THUMBPRINT=$($cert.Thumbprint)" >> $env:GITHUB_ENV
+            "SCRIBEFORGE_WINDOWS_THUMBPRINT=$($cert.Thumbprint)" >> $env:GITHUB_ENV
           } finally {
             Remove-Item $path -ErrorAction SilentlyContinue
           }
-      - name: Package StoryForge
+      - name: Package ScribeForge
         run: node scripts/release-desktop.mjs package ${{ matrix.target }}
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
@@ -74,10 +74,10 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          STORYFORGE_UPDATER_PUBLIC_KEY: ${{ vars.STORYFORGE_UPDATER_PUBLIC_KEY }}
+          SCRIBEFORGE_UPDATER_PUBLIC_KEY: ${{ vars.SCRIBEFORGE_UPDATER_PUBLIC_KEY }}
       - uses: actions/upload-artifact@v4
         with:
-          name: storyforge-${{ matrix.target }}
+          name: scribeforge-${{ matrix.target }}
           path: dist/release-package/
           if-no-files-found: error
 
@@ -95,21 +95,21 @@ jobs:
           node-version: 22
       - uses: actions/download-artifact@v4
         with:
-          pattern: storyforge-*
+          pattern: scribeforge-*
           path: dist/downloads
       - name: Install updater signature verifier when configured
-        if: vars.STORYFORGE_UPDATER_PUBLIC_KEY != ''
+        if: vars.SCRIBEFORGE_UPDATER_PUBLIC_KEY != ''
         run: sudo apt-get update && sudo apt-get install -y minisign
       - name: Validate and assemble desktop assets
         run: node scripts/release-desktop.mjs assemble "$RELEASE_TAG"
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-          STORYFORGE_UPDATER_PUBLIC_KEY: ${{ vars.STORYFORGE_UPDATER_PUBLIC_KEY }}
+          SCRIBEFORGE_UPDATER_PUBLIC_KEY: ${{ vars.SCRIBEFORGE_UPDATER_PUBLIC_KEY }}
       - name: Publish complete release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           gh release create "$RELEASE_TAG" dist/release-assets/* \
-            --verify-tag --latest --title "StoryForge ${RELEASE_TAG} — Initial Release" \
+            --verify-tag --latest --title "ScribeForge v1.0.0 — Initial Release" \
             --notes-file dist/release-notes.md

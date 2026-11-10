@@ -1,5 +1,5 @@
 // The build prepends ASSETS and REVISION using the generated application shell.
-const prefix = `storyforge-offline:${self.registration.scope}:`;
+const prefix = `scribeforge-offline:${self.registration.scope}:`;
 const cacheName = prefix + REVISION;
 const scope = new URL(self.registration.scope);
 const urls = ASSETS.map(asset => new URL(asset, scope).href);

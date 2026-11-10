@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "StoryForge",
+  "productName": "ScribeForge",
   "version": "1.0.0",
-  "identifier": "com.storyforge.desktop",
+  "identifier": "com.scribeforge.desktop",
   "build": {
     "beforeDevCommand": "npm run build:desktop:dev",
     "beforeBuildCommand": "npm run build:desktop",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "StoryForge",
+        "title": "ScribeForge",
         "width": 1440,
         "height": 1000,
         "minWidth": 720,
@@ -55,8 +55,8 @@
         "ext": [
           "stf"
         ],
-        "name": "StoryForge Manuscript",
-        "description": "StoryForge Manuscript",
+        "name": "ScribeForge Manuscript",
+        "description": "ScribeForge Manuscript",
         "role": "Editor",
         "rank": "Owner",
         "mimeType": "application/vnd.storyforge+json",

@@ -203,11 +203,15 @@ pub fn run() {
             std::fs::create_dir_all(base)?;
             let base = base.canonicalize()?;
             let identifier = app.config().identifier.as_str();
-            if !["com.storyforge.desktop", "com.storyforge.desktop.dev"].contains(&identifier) {
-                return Err("Unexpected StoryForge application identifier.".into());
-            }
+            let previous = match identifier {
+                "com.scribeforge.desktop" => "com.storyforge.desktop",
+                "com.scribeforge.desktop.dev" => "com.storyforge.desktop.dev",
+                _ => return Err("Unexpected ScribeForge application identifier.".into()),
+            };
             let root = base.join(identifier);
             let protected_roots = [
+                "com.scribeforge.desktop",
+                "com.scribeforge.desktop.dev",
                 "com.storyforge.desktop",
                 "com.storyforge.desktop.dev",
                 "com.scriptforge.desktop",
@@ -221,8 +225,17 @@ pub fn run() {
                 .map(PathBuf::from)
                 .filter(|path| is_stf(path))
                 .collect();
+            let library = Library::new(root.join("manuscripts")).map_err(|error| error.message)?;
+            library
+                .migrate_from(&base.join(previous).join("manuscripts"))
+                .map_err(|error| {
+                    format!(
+                        "Could not copy the previous library. Original documents were kept. {}",
+                        error.message
+                    )
+                })?;
             app.manage(Desktop {
-                library: Library::new(root.join("manuscripts")).map_err(|error| error.message)?,
+                library,
                 pending: Mutex::new(paths),
                 closing: AtomicBool::new(false),
                 protected_roots,
@@ -233,7 +246,7 @@ pub fn run() {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 if !window.state::<Desktop>().closing.load(Ordering::SeqCst) {
                     api.prevent_close();
-                    let _ = window.emit("storyforge-close-requested", ());
+                    let _ = window.emit("scribeforge-close-requested", ());
                 }
             }
         })
@@ -246,7 +259,7 @@ pub fn run() {
             print_manuscript
         ])
         .build(tauri::generate_context!())
-        .expect("StoryForge could not start")
+        .expect("ScribeForge could not start")
         .run(|app, event| match event {
             #[cfg(target_os = "macos")]
             tauri::RunEvent::Opened { urls } => {
@@ -257,13 +270,13 @@ pub fn run() {
                             .filter(|path| is_stf(path)),
                     );
                 }
-                let _ = app.emit("storyforge-open-requested", ());
+                let _ = app.emit("scribeforge-open-requested", ());
             }
             tauri::RunEvent::ExitRequested { api, .. }
                 if !app.state::<Desktop>().closing.load(Ordering::SeqCst) =>
             {
                 api.prevent_exit();
-                let _ = app.emit("storyforge-close-requested", ());
+                let _ = app.emit("scribeforge-close-requested", ());
             }
             _ => {}
         });

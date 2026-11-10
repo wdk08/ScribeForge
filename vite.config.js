@@ -6,17 +6,17 @@ const source = path => fileURLToPath(new URL(path, import.meta.url));
 const theme = readFileSync(source('./js/theme.js'), 'utf8');
 
 export default defineConfig({
-  base: '/StoryForge/',
+  base: '/ScribeForge/',
   publicDir: false,
-  define: { __STORYFORGE_DEV__: 'false', __STORYFORGE_OFFLINE__: 'true' },
+  define: { __SCRIBEFORGE_DEV__: 'false', __SCRIBEFORGE_OFFLINE__: 'true' },
   plugins: [{
-    name: 'storyforge-browser-entries',
+    name: 'scribeforge-browser-entries',
     transformIndexHtml: {
       order: 'pre',
       handler(html) {
         return html.replace('<script src="./js/theme.js"></script>', () => `<script>${theme}</script>`)
-          .replace('src="./app/library.js"', 'src="./js/storyforge/home.js"')
-          .replace('src="./app/manuscript.js"', 'src="./js/storyforge/editor.js"');
+          .replace('src="./app/library.js"', 'src="./js/scribeforge/home.js"')
+          .replace('src="./app/manuscript.js"', 'src="./js/scribeforge/editor.js"');
       },
     },
   }],

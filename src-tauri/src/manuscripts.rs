@@ -1,4 +1,4 @@
-use crate::storage::{atomic_replace, exclusive, Failure, Result};
+use crate::storage::{atomic_replace, exclusive, hash, Failure, Result};
 use serde_json::{json, Value};
 use std::{
     fs,
@@ -24,7 +24,7 @@ fn valid_id(value: &str) -> bool {
             .all(|c| c.is_ascii_alphanumeric() || c == b'-' || c == b'_')
 }
 
-fn read_record(path: &Path) -> Result<Option<Value>> {
+fn record_bytes(path: &Path) -> Result<Option<Vec<u8>>> {
     let meta = match fs::symlink_metadata(path) {
         Ok(meta) => meta,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
@@ -35,8 +35,13 @@ fn read_record(path: &Path) -> Result<Option<Value>> {
             "Invalid manuscript storage file. The file was preserved.",
         ));
     }
-    let record: Value = serde_json::from_slice(&fs::read(path)?)?;
-    Ok(Some(record))
+    Ok(Some(fs::read(path)?))
+}
+
+fn read_record(path: &Path) -> Result<Option<Value>> {
+    Ok(record_bytes(path)?
+        .map(|bytes| serde_json::from_slice(&bytes))
+        .transpose()?)
 }
 
 impl Library {
@@ -69,10 +74,10 @@ impl Library {
         Ok(Self { root })
     }
 
-    pub fn run(&self, action: &str, body: &Value) -> Result<Value> {
+    fn lock(&self) -> Result<fs::File> {
         if self.root.canonicalize()? != self.root {
             return Err(storage_error(
-                "The manuscript storage folder changed. Restart StoryForge to review it.",
+                "The manuscript storage folder changed. Restart ScribeForge to review it.",
             ));
         }
         // Hold one OS lock across the revision check and atomic commit, including
@@ -88,7 +93,78 @@ impl Library {
             .write(true)
             .open(lock_path)?;
         lock.lock()?;
+        Ok(lock)
+    }
 
+    pub fn migrate_from(&self, source: &Path) -> Result<()> {
+        let _lock = self.lock()?;
+        let marker = self.root.join(".rename-v1");
+        if marker.is_file() {
+            return Ok(());
+        }
+        let entries = match fs::symlink_metadata(source) {
+            Ok(info) if info.is_dir() && source.canonicalize()? == source => fs::read_dir(source)?,
+            Ok(_) => {
+                return Err(storage_error(
+                    "The previous library path contains a symbolic link.",
+                ))
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                return exclusive(&marker, b"complete");
+            }
+            Err(error) => return Err(error.into()),
+        };
+        for entry in entries {
+            let path = entry?.path();
+            let Some(id) = path
+                .file_stem()
+                .and_then(|stem| stem.to_str())
+                .filter(|id| valid_id(id))
+            else {
+                continue;
+            };
+            if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
+                continue;
+            }
+            let Some(bytes) = record_bytes(&path)? else {
+                continue;
+            };
+            let destination = self.root.join(format!("{id}.json"));
+            match record_bytes(&destination)? {
+                None => exclusive(&destination, &bytes)?,
+                Some(existing) if existing == bytes => {}
+                Some(_) => {
+                    // A deterministic ID makes an interrupted migration safe to retry.
+                    let copy_id = format!("migrated-{}", hash(&bytes));
+                    let copy_path = self.root.join(format!("{copy_id}.json"));
+                    let mut record: Value = serde_json::from_slice(&bytes)?;
+                    let object = record
+                        .as_object_mut()
+                        .ok_or_else(|| storage_error("Invalid record in the previous library."))?;
+                    object.insert("id".into(), json!(&copy_id));
+                    for key in ["current", "previous"] {
+                        if let Some(document) = object.get_mut(key).and_then(Value::as_object_mut) {
+                            document.insert("documentId".into(), json!(&copy_id));
+                        }
+                    }
+                    let copy = serde_json::to_vec(&record)?;
+                    match record_bytes(&copy_path)? {
+                        None => exclusive(&copy_path, &copy)?,
+                        Some(existing) if existing == copy => {}
+                        Some(_) => {
+                            return Err(storage_error(
+                                "A migrated copy already exists with different content.",
+                            ))
+                        }
+                    }
+                }
+            }
+        }
+        exclusive(&marker, b"complete")
+    }
+
+    pub fn run(&self, action: &str, body: &Value) -> Result<Value> {
+        let _lock = self.lock()?;
         if action == "list" {
             let mut items = Vec::new();
             for entry in fs::read_dir(&self.root)? {
@@ -206,14 +282,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn storyforge_library_isolation_and_atomic_recovery() {
+    fn scribeforge_library_isolation_and_atomic_recovery() {
         let temp = tempfile::tempdir().unwrap();
         let base = temp.path().canonicalize().unwrap();
         let old = base.join("com.scriptforge.desktop");
         fs::create_dir(&old).unwrap();
         fs::write(old.join("original"), b"untouched").unwrap();
-        let prod = base.join("com.storyforge.desktop/manuscripts");
-        let dev = Library::new(base.join("com.storyforge.desktop.dev/manuscripts")).unwrap();
+        let prod = base.join("com.scribeforge.desktop/manuscripts");
+        let dev = Library::new(base.join("com.scribeforge.desktop.dev/manuscripts")).unwrap();
         let manuscript = |revision, text| {
             json!({"id":"story", "revision": revision, "current": {
                 "format":"storyforge", "version":1, "documentId":"story", "metadata":{"title":"Book"}, "content":{"content":[text]}
@@ -245,5 +321,44 @@ mod tests {
         assert_eq!(dev.run("list", &json!({})).unwrap()[0]["revision"], 4);
         assert!(!prod.exists());
         assert_eq!(fs::read(old.join("original")).unwrap(), b"untouched");
+    }
+
+    #[test]
+    fn rename_copies_manuscripts_and_preserves_both_versions_of_a_collision() {
+        let temp = tempfile::tempdir().unwrap();
+        let base = temp.path().canonicalize().unwrap();
+        let source = Library::new(base.join("com.storyforge.desktop/manuscripts")).unwrap();
+        let target = Library::new(base.join("com.scribeforge.desktop/manuscripts")).unwrap();
+        let record = |revision, title| {
+            json!({"id":"story", "revision":revision, "current":{
+                "format":"storyforge", "version":1, "documentId":"story", "metadata":{"title":title}, "content":{"content":[]}
+            }})
+        };
+        source.run("put", &record(0, "Original")).unwrap();
+        source.run("put", &record(1, "Previous library")).unwrap();
+        target.run("put", &record(0, "New library")).unwrap();
+
+        target.migrate_from(&source.root).unwrap();
+        target.migrate_from(&source.root).unwrap();
+        let list = target.run("list", &json!({})).unwrap();
+        assert_eq!(list.as_array().unwrap().len(), 2);
+        let copy = list
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|entry| entry["id"] != "story")
+            .unwrap();
+        let saved = target.run("get", &json!({"id":copy["id"]})).unwrap();
+        assert_eq!(saved["current"]["metadata"]["title"], "Previous library");
+        assert_eq!(saved["previous"]["metadata"]["title"], "Original");
+        assert_eq!(saved["previous"]["documentId"], copy["id"]);
+        assert_eq!(
+            target.run("get", &json!({"id":"story"})).unwrap()["current"]["metadata"]["title"],
+            "New library"
+        );
+        assert_eq!(
+            source.run("get", &json!({"id":"story"})).unwrap()["current"]["metadata"]["title"],
+            "Previous library"
+        );
     }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "storyforge",
+  "name": "scribeforge",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -13,11 +13,11 @@
     "build:desktop": "node scripts/build-desktop.mjs desktop",
     "build:desktop:dev": "node scripts/build-desktop.mjs desktop --dev",
     "check": "node scripts/check.mjs",
-    "test": "node --test tests/storyforge/*.test.js",
+    "test": "node --test tests/scribeforge/*.test.js",
     "test:browser": "playwright test",
     "test:desktop": "npm run build:desktop:dev && cargo test --manifest-path src-tauri/Cargo.toml",
     "tauri": "tauri",
-    "verify:release": "node scripts/verify-storyforge-release.mjs",
+    "verify:release": "node scripts/verify-scribeforge-release.mjs",
     "test:pages": "playwright test --config playwright.pages.config.js"
   },
   "engines": {

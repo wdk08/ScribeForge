@@ -149,7 +149,7 @@ async function start() {
   function updateTitle() {
     const name = manuscript.metadata.title || 'Untitled Manuscript';
     $('workspace-title').textContent = name;
-    document.title = `${name} · StoryForge`;
+    document.title = `${name} · ScribeForge`;
   }
   title.value = manuscript.metadata.title;
   title.disabled = Boolean(record.recovered);
@@ -437,7 +437,7 @@ async function start() {
     focusEditor: () => view.focus(),
     report: notice,
   });
-  window.addEventListener('storage', event => { if (event.key === 'storyforge.paragraph-styles') styleLibrary.refresh(); });
+  window.addEventListener('storage', event => { if (event.key === 'scribeforge.paragraph-styles') styleLibrary.refresh(); });
 
   setupSettings({
     get: () => manuscript,

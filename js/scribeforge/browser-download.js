@@ -1,5 +1,5 @@
-export const releasePage = 'https://github.com/wdk08/StoryForge/releases/latest';
-export const releaseAPI = 'https://api.github.com/repos/wdk08/StoryForge/releases/latest';
+export const releasePage = 'https://github.com/wdk08/ScribeForge/releases/latest';
+export const releaseAPI = 'https://api.github.com/repos/wdk08/ScribeForge/releases/latest';
 
 const installerTypes = [
   { key: 'macArm', label: 'macOS — Apple Silicon', extension: /\.dmg$/i, arch: /(?:^|[_\s.-])(?:aarch64|arm64)(?=[_\s.-]|$)/i },
@@ -8,10 +8,10 @@ const installerTypes = [
 ];
 
 export function releaseInstallers(release) {
-  if (!release || release.draft || release.prerelease || !/^v?\d+\.\d+\.\d+$/.test(release.tag_name)) {
+  if (!release || release.draft || release.prerelease || !/^v?\d+\.\d+\.\d+(?:-scribeforge)?$/.test(release.tag_name)) {
     throw new Error('A stable published release is required.');
   }
-  const assets = (release.assets ?? []).filter(asset => asset.state === 'uploaded' && asset.size > 0);
+  const assets = (release.assets ?? []).filter(asset => asset.state === 'uploaded' && asset.size > 0 && asset.name?.startsWith('ScribeForge'));
   return Object.fromEntries(installerTypes.map(({ key, extension, arch }) => {
     const matches = assets.filter(asset => extension.test(asset.name) && arch.test(asset.name));
     if (matches.length !== 1) throw new Error('Installer downloads could not be identified safely.');
@@ -19,7 +19,7 @@ export function releaseInstallers(release) {
     const url = new URL(href);
     const path = decodeURIComponent(url.pathname);
     if (url.origin !== 'https://github.com' ||
-      path !== `/wdk08/StoryForge/releases/download/${release.tag_name}/${name}` ||
+      path !== `/wdk08/ScribeForge/releases/download/${release.tag_name}/${name}` ||
       url.username || url.password || url.search || url.hash) {
       throw new Error('Unexpected installer download location.');
     }
@@ -55,7 +55,7 @@ export function setupBrowserDownload(environment = window) {
     anchor.rel = 'noopener';
     return anchor;
   };
-  const fallback = link('View StoryForge releases', releasePage);
+  const fallback = link('View ScribeForge releases', releasePage);
   fallback.target = '_blank';
   options.append(fallback);
   menu.append(summary, options);
