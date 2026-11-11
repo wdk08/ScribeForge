@@ -43,7 +43,12 @@ async function packageDesktop(target) {
   const macSigned = Boolean(mac && environment.APPLE_CERTIFICATE && environment.APPLE_CERTIFICATE_PASSWORD && environment.APPLE_SIGNING_IDENTITY);
   const macNotarized = Boolean(macSigned && environment.APPLE_ID && environment.APPLE_PASSWORD && environment.APPLE_TEAM_ID);
   const windowsSigned = Boolean(!mac && environment.SCRIBEFORGE_WINDOWS_THUMBPRINT);
-  const signedUpdates = Boolean(environment.TAURI_SIGNING_PRIVATE_KEY && environment.SCRIBEFORGE_UPDATER_PUBLIC_KEY);
+  const privateKeyConfigured = Boolean(environment.TAURI_SIGNING_PRIVATE_KEY?.trim());
+  const publicKey = environment.SCRIBEFORGE_UPDATER_PUBLIC_KEY?.trim();
+  if (privateKeyConfigured !== Boolean(publicKey)) {
+    throw new Error('Configure both the ScribeForge updater public key and private signing key.');
+  }
+  const signedUpdates = privateKeyConfigured;
   if (!macSigned) {
     for (const key of Object.keys(environment)) if (key.startsWith('APPLE_')) delete environment[key];
   } else if (!macNotarized) {
@@ -64,7 +69,7 @@ async function packageDesktop(target) {
     digestAlgorithm: 'sha256',
     timestampUrl: 'http://timestamp.digicert.com',
   };
-  if (signedUpdates) config.plugins = { updater: { endpoints: [updaterEndpoint], pubkey: environment.SCRIBEFORGE_UPDATER_PUBLIC_KEY } };
+  if (signedUpdates) config.plugins = { updater: { endpoints: [updaterEndpoint], pubkey: publicKey, requireSignedVersion: true } };
   const configPath = resolve(process.env.RUNNER_TEMP || 'dist', 'scribeforge-release-config.json');
   await writeFile(configPath, JSON.stringify(config));
   execFileSync(process.execPath, [resolve('node_modules/@tauri-apps/cli/tauri.js'), 'build',
@@ -127,6 +132,10 @@ export async function assembleRelease(input, output, tag, publicKey) {
       const sigText = Buffer.from(signature, 'base64').toString('utf8');
       const pubkeyLine = pubkeyText.split(/\r?\n/)[1];
       if (!pubkeyLine || !sigText.startsWith('untrusted comment:')) throw new Error('Invalid ScribeForge updater key or signature format.');
+      const trustedComment = sigText.split(/\r?\n/).find(line => line.startsWith('trusted comment:'));
+      if (!trustedComment?.split('\t').includes(`version:${version}`)) {
+        throw new Error(`The ${target} updater signature must match version ${version}.`);
+      }
       const verificationSignature = join(directory, 'verify.minisig');
       await writeFile(verificationSignature, sigText);
       execFileSync('minisign', ['-Vm', join(directory, updateAsset), '-P', pubkeyLine, '-x', verificationSignature], { stdio: 'inherit' });
@@ -135,7 +144,7 @@ export async function assembleRelease(input, output, tag, publicKey) {
   }
   releaseInstallers({ tag_name: tag, assets });
   const manifestCount = Object.keys(platforms).length;
-  if (manifestCount && manifestCount !== Object.keys(targets).length) throw new Error('Signed updater assets are incomplete.');
+  if (publicKey && manifestCount !== Object.keys(targets).length) throw new Error('Signed updater assets are incomplete.');
   if (manifestCount) {
     await writeFile(join(output, 'latest.json'), JSON.stringify({ version, pub_date: new Date().toISOString(), platforms }, null, 2) + '\n');
   }

@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "build": "ScriptForge source build",
+  "emscripten": "3.1.47",
+  "sources": [
+    {
+      "name": "piper-phonemize",
+      "commit": "cfff8e52ebaea37c7e953ae2d06b174acb827ac4",
+      "sha256": "663bc640c54c26b202bbc05ffb71ebf5f48874a8465380d968e21627cb596e23"
+    },
+    {
+      "name": "espeak-ng",
+      "commit": "0f65aa301e0d6bae5e172cc74197d32a6182200f",
+      "sha256": "bf1208ee986c69a7c5e611dd59dda32f839f86e4d4804aba0f29c34c3ccbe714"
+    },
+    {
+      "name": "sonic",
+      "commit": "fbf75c3d6d846bad3bb3d456cbc5d07d9fd8c104",
+      "sha256": "a6aca8fa3c7b3ff1f0988b6d4c94b0fd6a3f2e2331408e1ce5772968f401cd60"
+    }
+  ],
+  "recipe": "scripts/build-piper.mjs",
+  "recipeSha256": "dfdec6bc7630b82a8ff23d8394c877fa84cea20227ef3db2914c18b550bddad6",
+  "artifacts": {
+    "piper_phonemize.js": "e9034bdb8b403b068f1dae5c3dc82e3858be43c103e0d5c2eecc3481465a4169",
+    "piper_phonemize.wasm": "289104acb45ddbb5bb0e9744182ecaab97f619cd04df19dd45d35d98b67175a3",
+    "piper_phonemize.data": "df5c00a55e98df8fc0fc8841a31135be81e1f69bc968cf5b6bff0d155aef22b0"
+  }
+}

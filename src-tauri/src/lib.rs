@@ -1,5 +1,6 @@
 mod manuscripts;
 mod storage;
+mod updates;
 
 use manuscripts::Library;
 use serde_json::{json, Value};
@@ -195,6 +196,8 @@ fn print_manuscript(window: tauri::WebviewWindow) -> Result<()> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(updates::Updates::default())
         .setup(|app| {
             let root = app.path().app_data_dir()?;
             let base = root
@@ -256,7 +259,11 @@ pub fn run() {
             desktop_import,
             desktop_export,
             desktop_close,
-            print_manuscript
+            print_manuscript,
+            updates::desktop_update_check,
+            updates::desktop_update_dismiss,
+            updates::desktop_update_download,
+            updates::desktop_update_install
         ])
         .build(tauri::generate_context!())
         .expect("ScribeForge could not start")

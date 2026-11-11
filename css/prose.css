@@ -134,3 +134,17 @@
   .cover-workspace-body { grid-template-columns: minmax(178px, 38%) minmax(0, 1fr); }
   .cover-controls .settings-fields { grid-template-columns: 1fr; }
 }
+
+#desktop-update[open]:not(:modal) {
+  position: fixed;
+  inset: auto 20px 48px auto;
+  width: min(370px, calc(100vw - 40px));
+  margin: 0;
+  padding: 20px;
+  z-index: 12;
+}
+#desktop-update h1 { margin: 0 0 12px; font-size: 22px; }
+#desktop-update progress { width: 100%; accent-color: var(--sf-763232, #49339a); }
+#desktop-update [role="alert"] { color: var(--sf-8c3939, #5940ad); overflow-wrap: anywhere; }
+#desktop-update p:empty { display: none; }
+@media print { #desktop-update { display: none !important; } }

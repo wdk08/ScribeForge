@@ -1,0 +1,227 @@
+[
+  {
+    "name": "onnxruntime",
+    "version": "1.22.0",
+    "url": "https://codeload.github.com/microsoft/onnxruntime/tar.gz/refs/tags/v1.22.0",
+    "sha256": "08b078eb7afbf376064b2b0f1781e3d78151cac0592988a0c0ec78bf72fde810",
+    "file": "onnxruntime-v1.22.0.tar.gz",
+    "license": "MIT",
+    "scope": "Upstream source, build/dependency recipes and third-party notices for the bundled WebAssembly runtime; no native MKL/CUDA/TensorRT runtime is shipped."
+  },
+  {
+    "name": "jspdf",
+    "version": "4.2.1",
+    "url": "https://codeload.github.com/parallax/jsPDF/tar.gz/refs/tags/v4.2.1",
+    "sha256": "1514865f23370e632d2e22f0c4685db76a8ef5fa28c6a172482f03e2dd7b8e92",
+    "file": "jspdf-v4.2.1.tar.gz",
+    "license": "MIT",
+    "scope": "Preferred source for the bundled jsPDF UMD build, including build recipes and notices."
+  },
+  {
+    "name": "emscripten-runtime-support",
+    "version": "3.1.47",
+    "url": "https://codeload.github.com/emscripten-core/emscripten/tar.gz/refs/tags/3.1.47",
+    "sha256": "92961d97a602ce4e47828ac04c7d36acd7a80a0bfe1458429d4c944b1c4fe321",
+    "file": "emscripten-3.1.47.tar.gz",
+    "license": "MIT AND LLVM runtime third-party notices",
+    "scope": "Emscripten support runtime source and its libc/musl/libc++/compiler-rt licenses; general-purpose compiler executables are not included."
+  },
+  {
+    "name": "onnx-abseil_cpp",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/abseil/abseil-cpp/zip/refs/tags/20240722.0",
+    "sha1": "36ee53eb1466fb6e593fc5c286680de31f8a494a",
+    "file": "onnx-dep-abseil_cpp.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "95e90be7c3643e658670e0dd3c1b27092349c34b632c6e795686355f67eca89f"
+  },
+  {
+    "name": "onnx-cxxopts",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/jarro2783/cxxopts/zip/3c73d91c0b04e2b59462f0a741be8c07024c1bc0",
+    "sha1": "6c6ca7f8480b26c8d00476e0e24b7184717fe4f0",
+    "file": "onnx-dep-cxxopts.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "57b5f012372d4c0e0a975b2e534e9af647cd20530fc72f73a75a61e05e0f997e"
+  },
+  {
+    "name": "onnx-date",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/HowardHinnant/date/zip/refs/tags/v3.0.1",
+    "sha1": "2dac0c81dc54ebdd8f8d073a75c053b04b56e159",
+    "file": "onnx-dep-date.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "f4300b96f7a304d4ef9bf6e0fa3ded72159f7f2d0f605bdde3e030a0dba7cf9f"
+  },
+  {
+    "name": "onnx-dlpack",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/dmlc/dlpack/zip/refs/tags/v0.6",
+    "sha1": "4d565dd2e5b31321e5549591d78aa7f377173445",
+    "file": "onnx-dep-dlpack.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "cb296b25f1ad5d52aa0efd7553e1aab17ab4561d1068b291fbe14d543d22f381"
+  },
+  {
+    "name": "onnx-flatbuffers",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/google/flatbuffers/zip/refs/tags/v23.5.26",
+    "sha1": "59422c3b5e573dd192fead2834d25951f1c1670c",
+    "file": "onnx-dep-flatbuffers.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "57bd580c0772fd1a726c34ab8bf05325293bc5f9c165060a898afa1feeeb95e1"
+  },
+  {
+    "name": "onnx-fp16",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/Maratyszcza/FP16/zip/0a92994d729ff76a58f692d3028ca1b64b145d91",
+    "sha1": "b985f6985a05a1c03ff1bb71190f66d8f98a1494",
+    "file": "onnx-dep-fp16.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "e66e65515fa09927b348d3d584c68be4215cfe664100d01c9dbc7655a5716d70"
+  },
+  {
+    "name": "onnx-fxdiv",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/Maratyszcza/FXdiv/zip/63058eff77e11aa15bf531df5dd34395ec3017c8",
+    "sha1": "a5658f4036402dbca7cebee32be57fb8149811e1",
+    "file": "onnx-dep-fxdiv.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "3d7b0e9c4c658a84376a1086126be02f9b7f753caa95e009d9ac38d11da444db"
+  },
+  {
+    "name": "onnx-google_benchmark",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/google/benchmark/zip/refs/tags/v1.8.5",
+    "sha1": "cd47d3d272faf353600c8cc2fdec2b52d6f69177",
+    "file": "onnx-dep-google_benchmark.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "39f57865cdbfa06f02ae91ea76465246046cc47d5908aa5a3abeb9026fb73dcc"
+  },
+  {
+    "name": "onnx-googletest",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/google/googletest/zip/refs/tags/v1.15.0",
+    "sha1": "9d2d0af8d77ac726ea55d44a8fa727ec98311349",
+    "file": "onnx-dep-googletest.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "ed98258b96c6dc8af33eeb03c8d94a05b185866604382e12980f576595bdc509"
+  },
+  {
+    "name": "onnx-googlexnnpack",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/google/XNNPACK/zip/fe98e0b93565382648129271381c14d6205255e3",
+    "sha1": "14f61dcf17cec2cde34ba2dcf61d6f24bf6059f3",
+    "file": "onnx-dep-googlexnnpack.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "7aeeb8c6e134e0866655bbb7a0387166eba36bcd436a0c3e0f4c5286426b785f"
+  },
+  {
+    "name": "onnx-json",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/nlohmann/json/zip/refs/tags/v3.11.3",
+    "sha1": "5e88795165cc8590138d1f47ce94ee567b85b4d6",
+    "file": "onnx-dep-json.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "04022b05d806eb5ff73023c280b68697d12b93e1b7267a0b22a1a39ec7578069"
+  },
+  {
+    "name": "onnx-microsoft_gsl",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/microsoft/GSL/zip/refs/tags/v4.0.0",
+    "sha1": "cf368104cd22a87b4dd0c80228919bb2df3e2a14",
+    "file": "onnx-dep-microsoft_gsl.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "eb91fcb10a6aa5ccb1d224e07a56c8ecffe9a1bb601fa1848276ec46a2200bfb"
+  },
+  {
+    "name": "onnx-mimalloc",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/microsoft/mimalloc/zip/refs/tags/v2.1.1",
+    "sha1": "d5ee7d34223d0567892db5179849939c8769dc41",
+    "file": "onnx-dep-mimalloc.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "23b1bffb2eff57b1e3cb8edc9410d448db2bb43400206a151e107dcabcad773a"
+  },
+  {
+    "name": "onnx-mp11",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/boostorg/mp11/zip/refs/tags/boost-1.82.0",
+    "sha1": "9bc9e01dffb64d9e0773b2e44d2f22c51aace063",
+    "file": "onnx-dep-mp11.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "81431bdc44c439a324e02c07ed067f8f556419fd86f2d8b486ff568df6aac899"
+  },
+  {
+    "name": "onnx-onnx",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/onnx/onnx/zip/refs/tags/v1.17.0",
+    "sha1": "13a60ac5217c104139ce0fd024f48628e7bcf5bc",
+    "file": "onnx-dep-onnx.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "54ab63aec98693c8a021aa708aad046183a0d166808733429fde7f644c84d637"
+  },
+  {
+    "name": "onnx-protobuf",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/protocolbuffers/protobuf/zip/refs/tags/v21.12",
+    "sha1": "7cf2733949036c7d52fda017badcab093fe73bfa",
+    "file": "onnx-dep-protobuf.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "6a31b662deaeb0ac35e6287bda2f3369b19836e6c9f8828d4da444346f420298"
+  },
+  {
+    "name": "onnx-psimd",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/Maratyszcza/psimd/zip/072586a71b55b7f8c584153d223e95687148a900",
+    "sha1": "1f5454b01f06f9656b77e4a5e2e31d7422487013",
+    "file": "onnx-dep-psimd.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "dc615342bcbe51ca885323e51b68b90ed9bb9fa7df0f4419dbfa0297d5e837b7"
+  },
+  {
+    "name": "onnx-pthreadpool",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/google/pthreadpool/zip/4e80ca24521aa0fb3a746f9ea9c3eaa20e9afbb0",
+    "sha1": "bd4ea65c8292801e9555b527a0ecbb2e0092c917",
+    "file": "onnx-dep-pthreadpool.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "6d373fa7e2b899605fc3b6e72171a71bccbaf9d4d596b7f514535c4ffb966b3b"
+  },
+  {
+    "name": "onnx-pytorch_cpuinfo",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/pytorch/cpuinfo/zip/8a1772a0c5c447df2d18edf33ec4603a8c9c04a6",
+    "sha1": "85bf8a60dae026b99b6ccd78606c85ed83bfb2cd",
+    "file": "onnx-dep-pytorch_cpuinfo.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "4bf314b3f04db2fd984fef38a7e278e702b74297ef0af592b73296edba02b9d4"
+  },
+  {
+    "name": "onnx-re2",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/google/re2/zip/refs/tags/2024-07-02",
+    "sha1": "646e1728269cde7fcef990bf4a8e87b047882e88",
+    "file": "onnx-dep-re2.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "a835fe55fbdcd8e80f38584ab22d0840662c67f2feb36bd679402da9641dc71e"
+  },
+  {
+    "name": "onnx-safeint",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/dcleblanc/SafeInt/zip/refs/tags/3.0.28",
+    "sha1": "23f252040ff6cb9f1fd18575b32fa8fb5928daac",
+    "file": "onnx-dep-safeint.zip",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "3ffbd9a2fdff45da77da3e7269e9aa512ea43bed5c38ce8fd8f3d1068a032c3f"
+  },
+  {
+    "name": "onnx-kleidiai",
+    "version": "pinned-in-ORT-1.22.0",
+    "url": "https://codeload.github.com/ARM-software/kleidiai/tar.gz/refs/tags/v1.4.0",
+    "sha1": "22d3b57b54a61c194ab256ff11b0353a3b220244",
+    "file": "onnx-dep-kleidiai.tar.gz",
+    "scope": "ONNX WebAssembly/core build dependency source, retained with its own license/notices; optional benchmark/test sources included conservatively.",
+    "sha256": "890051ea6fd6a503a8acd3e31a7fe7f7ec810ae96d865d99df648a038b15a106"
+  }
+]

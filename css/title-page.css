@@ -1,0 +1,21 @@
+.title-page { position:relative; width:816px; height:1056px; margin:0 auto 26px; background:var(--sf-fff, #fff); border:1px solid var(--sf-dedbd5, #dedbd5); box-shadow:0 1px 5px var(--sf-30282016, #30282016); color:var(--sf-191919, #191919); font:16px/20px "Courier Prime","Courier New",monospace; }
+.title-page-center { position:absolute; top:320px; left:112px; right:112px; text-align:center; }
+.title-field textarea { display:block; width:100%; resize:none; overflow:hidden; padding:0; margin:0; border:0; border-radius:2px; background:transparent; font:inherit; line-height:20px; color:inherit; text-align:inherit; text-transform:inherit; }
+.title-field textarea::placeholder { color:var(--sf-aaa39b, #aaa39b); opacity:1; }
+.title-field textarea:focus { outline:1px solid var(--sf-c9b7aa, #c9b7aa); outline-offset:5px; }
+.title-title { text-transform:uppercase; margin-bottom:48px; }
+.title-credit { margin-bottom:20px; }
+.title-page-contact { position:absolute; bottom:var(--title-contact-bottom,100px); left:var(--title-contact-left,96px); width:var(--title-contact-width,240px); text-align:left; direction:ltr; line-height:var(--title-contact-lineHeight,20px); }
+.title-print { display:none; white-space:pre-wrap; overflow-wrap:anywhere; }
+.writer-profile label { display:block; font-size:12px; margin:14px 0; }
+.writer-profile input,.writer-profile textarea { display:block; width:100%; padding:10px; margin-top:6px; background:var(--sf-fff, #fff); border:1px solid var(--sf-d9cbb9, #d9cbb9); border-radius:5px; font:inherit; }
+.writer-profile textarea { resize:vertical; }
+@media print { .title-page { zoom:1!important; box-shadow:none; border:0; margin:0; break-after:page; } .title-field textarea { display:none; } .title-print { display:block; } }
+
+/* Contact controls and print text must not inherit the centered title alignment. */
+.title-page-contact .title-field,.title-page-contact textarea,.title-page-contact .title-print{text-align:left;direction:ltr;unicode-bidi:plaintext;margin:0;padding:0;text-indent:0;line-height:var(--title-contact-lineHeight,20px)}
+.title-page-contact textarea{white-space:pre-wrap;overflow-wrap:anywhere}
+#screenplay-settings-dialog{max-width:720px}
+.writer-profile{min-width:0}
+.writer-profile input,.writer-profile textarea{min-width:0;max-width:100%;box-sizing:border-box;font-size:14px}
+@media(max-width:600px){#screenplay-settings-dialog{padding:24px}.writer-profile label{min-width:0}}

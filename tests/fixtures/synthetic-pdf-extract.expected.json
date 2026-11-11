@@ -1,0 +1,262 @@
+[
+  [
+    "scene",
+    "INT. MILLER HOUSE - NIGHT"
+  ],
+  [
+    "action",
+    "Tess sits on the couch, turning a folded letter\nover in her hands.\nRain taps against the dark window."
+  ],
+  [
+    "character",
+    "TYLER"
+  ],
+  [
+    "dialogue",
+    "Are you okay?\nYou have been quiet since we left the station."
+  ],
+  [
+    "action",
+    "Tess looks toward him."
+  ],
+  [
+    "character",
+    "TESS"
+  ],
+  [
+    "parenthetical",
+    "(quietly)"
+  ],
+  [
+    "dialogue",
+    "I'm fine.\nI just need a little time to think."
+  ],
+  [
+    "action",
+    "Tyler stands."
+  ],
+  [
+    "character",
+    "TESS"
+  ],
+  [
+    "dialogue",
+    "Don't go yet."
+  ],
+  [
+    "action",
+    "She reaches for the letter."
+  ],
+  [
+    "character",
+    "TESS (V.O.)"
+  ],
+  [
+    "dialogue",
+    "There are things I should have told you\nbefore any of this happened."
+  ],
+  [
+    "transition",
+    "CUT TO:"
+  ],
+  [
+    "scene",
+    "EXT. MILLER HOUSE - NIGHT"
+  ],
+  [
+    "action",
+    "A car pulls into the driveway.\nIts headlights sweep across the porch."
+  ],
+  [
+    "character",
+    "OFFICER (O.S.)"
+  ],
+  [
+    "dialogue",
+    "Is anybody home?"
+  ],
+  [
+    "action",
+    "Tess opens the front door."
+  ],
+  [
+    "character",
+    "TESS"
+  ],
+  [
+    "dialogue",
+    "We are both here. What happened?"
+  ],
+  [
+    "character",
+    "OFFICER"
+  ],
+  [
+    "parenthetical",
+    "(showing his badge)"
+  ],
+  [
+    "dialogue",
+    "I need you to come with me.\nThere are a few questions we need to ask."
+  ],
+  [
+    "action",
+    "He steps aside."
+  ],
+  [
+    "character",
+    "OFFICER"
+  ],
+  [
+    "dialogue",
+    "Please bring the letter."
+  ],
+  [
+    "transition",
+    "DISSOLVE TO:"
+  ],
+  [
+    "scene",
+    "INT./EXT. CAR - MOVING - NIGHT"
+  ],
+  [
+    "action",
+    "Tyler watches the road. The trees lean toward\nthe narrow shoulder in the wind."
+  ],
+  [
+    "character",
+    "TYLER"
+  ],
+  [
+    "dialogue",
+    "Did you know what was in that envelope?"
+  ],
+  [
+    "action",
+    "Tess looks outside."
+  ],
+  [
+    "character",
+    "TESS"
+  ],
+  [
+    "dialogue",
+    "NO"
+  ],
+  [
+    "action",
+    "She closes her eyes."
+  ],
+  [
+    "character",
+    "TESS"
+  ],
+  [
+    "parenthetical",
+    "(after a moment)"
+  ],
+  [
+    "dialogue",
+    "I thought I did.\nNow I'm not so sure."
+  ],
+  [
+    "character",
+    "TYLER (O.S.)"
+  ],
+  [
+    "dialogue",
+    "Then let's find out together."
+  ],
+  [
+    "transition",
+    "SMASH CUT TO:"
+  ],
+  [
+    "scene",
+    "INT. POLICE STATION - LATER"
+  ],
+  [
+    "action",
+    "The officer sets a recorder on the table."
+  ],
+  [
+    "character",
+    "OFFICER"
+  ],
+  [
+    "dialogue",
+    "Tell me what happened at the house."
+  ],
+  [
+    "action",
+    "Tess takes a long breath."
+  ],
+  [
+    "character",
+    "TESS"
+  ],
+  [
+    "dialogue",
+    "It started before we got there.\nBefore either of us knew what the letter meant."
+  ],
+  [
+    "action",
+    "Tyler opens the envelope."
+  ],
+  [
+    "character",
+    "TESS (CONT'D)"
+  ],
+  [
+    "dialogue",
+    "There was another page.\nIt's the part I couldn't show you."
+  ],
+  [
+    "transition",
+    "FADE OUT."
+  ],
+  [
+    "scene",
+    "EXT. FOREST - DAWN"
+  ],
+  [
+    "action",
+    "The road ends at a locked gate.\nBeyond it, the first light touches the trees."
+  ],
+  [
+    "character",
+    "TYLER"
+  ],
+  [
+    "dialogue",
+    "We can turn back."
+  ],
+  [
+    "action",
+    "Tess steps toward the gate."
+  ],
+  [
+    "character",
+    "TESS"
+  ],
+  [
+    "dialogue",
+    "Not this time."
+  ],
+  [
+    "action",
+    "She pushes the gate open."
+  ],
+  [
+    "character",
+    "TESS (V.O.)"
+  ],
+  [
+    "dialogue",
+    "This is where the story actually begins."
+  ],
+  [
+    "transition",
+    "FADE TO BLACK."
+  ]
+]

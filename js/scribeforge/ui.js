@@ -114,11 +114,11 @@ export function connectImport(store, navigate, showError) {
     .then(openAssociated).catch(error => showError(errorMessage(error)));
 }
 
-export function connectDesktopClose(flush, showError) {
+export function connectDesktopClose(flush, showError, updateBusy = () => false) {
   if (!desktop) return;
   let closing = false;
   desktop.event.listen('scribeforge-close-requested', async () => {
-    if (closing) return;
+    if (closing || updateBusy()) return;
     closing = true;
     try {
       await flush();

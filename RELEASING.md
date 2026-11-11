@@ -6,7 +6,7 @@ The Pages workflow deploys the Vite build from `main` when dispatched. Set the r
 
 For Apple Developer ID signing, configure the ScribeForge repository secrets `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, and `APPLE_SIGNING_IDENTITY`. For notarization, also configure `APPLE_ID`, `APPLE_PASSWORD`, and `APPLE_TEAM_ID`. The Windows workflow can import a ScribeForge signing certificate from `WINDOWS_CERTIFICATE` and `WINDOWS_CERTIFICATE_PASSWORD`. Without platform credentials, macOS bundles use ad-hoc signing and Windows installers are unsigned.
 
-For optional signed update assets, set the repository variable `SCRIBEFORGE_UPDATER_PUBLIC_KEY` and the matching `TAURI_SIGNING_PRIVATE_KEY` secret. Provide `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` if the key is encrypted. Publishing verifies all update signatures and emits a ScribeForge-only `latest.json` manifest when the complete signing configuration is present. The v1.0.0 application uses manual downloads. Its production bundle identifier is `com.scribeforge.desktop`, and development uses `com.scribeforge.desktop.dev`.
+To enable the desktop updater, set the repository variable `SCRIBEFORGE_UPDATER_PUBLIC_KEY` and the matching `TAURI_SIGNING_PRIVATE_KEY` secret. Set `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` if the key is password-protected. Keep the ScribeForge private key outside the repository and retain it for future updates. The workflow embeds the public key in production installers, verifies all three version-bound signatures, and attaches `latest.json`. Builds without either key use manual installers. Development and browser builds skip update checks.
 
 Use the [manual release command](RELEASE.md) to validate and push a new version tag.
 

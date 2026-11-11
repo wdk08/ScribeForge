@@ -1,6 +1,7 @@
 import { setupLibraryStatistics } from './library-statistics.js';
 import { encodeManuscript } from './model.js';
 import { libraryStore } from './storage.js';
+import { connectUpdates } from './updates.js';
 import { $, connectDesktopClose, connectImport, createManuscript, documentURL, errorMessage, exportBytes, fileName } from './ui.js';
 
 const store = libraryStore();
@@ -149,6 +150,7 @@ document.addEventListener('keydown', event => {
 });
 setupLibraryStatistics($('writing-statistics'), store.list);
 connectImport(store, open, showError);
-connectDesktopClose(async () => {}, showError);
+const updates = connectUpdates();
+connectDesktopClose(async () => {}, showError, () => updates?.busy);
 window.addEventListener('pageshow', event => { if (event.persisted) void load(); });
 void load();

@@ -40,6 +40,7 @@ test('release assembly requires all three packages and leaves updater output dis
   assert.equal(notes.length, 3);
   assert.equal(await readFile(join(output, names[0]), 'utf8'), 'test installer placeholder');
   await assert.rejects(readFile(join(output, 'latest.json')), { code: 'ENOENT' });
+  await assert.rejects(assembleRelease(packages, join(scratch, 'missing-signatures'), tag, 'configured-key'), /Signed updater assets are incomplete/);
   await rm(join(packages, Object.keys(targets)[0]), { recursive: true });
   await assert.rejects(assembleRelease(packages, join(scratch, 'partial'), tag), /package descriptor/);
 });

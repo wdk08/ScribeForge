@@ -1,0 +1,35 @@
+{
+  "emscripten": "3.1.47",
+  "emsdkCommit": "37b85e9eaee5be090569d018cca77a15cacc11b7",
+  "cmakeTested": "4.4.4",
+  "sources": [
+    {
+      "name": "piper-phonemize",
+      "commit": "cfff8e52ebaea37c7e953ae2d06b174acb827ac4",
+      "url": "https://github.com/wide-video/piper-phonemize",
+      "license": "MIT",
+      "scope": "Required src/, licenses/, LICENSE.md and README.md; unused tashkeel model excluded.",
+      "file": "third-party/piper-source/piper-phonemize.tar.gz",
+      "sha256": "663bc640c54c26b202bbc05ffb71ebf5f48874a8465380d968e21627cb596e23"
+    },
+    {
+      "name": "espeak-ng",
+      "commit": "0f65aa301e0d6bae5e172cc74197d32a6182200f",
+      "url": "https://github.com/rhasspy/espeak-ng",
+      "license": "GPL-3.0-or-later",
+      "scope": "Complete source, dictionary and phoneme data sources.",
+      "file": "third-party/piper-source/espeak-ng.tar.gz",
+      "sha256": "bf1208ee986c69a7c5e611dd59dda32f839f86e4d4804aba0f29c34c3ccbe714"
+    },
+    {
+      "name": "sonic",
+      "commit": "fbf75c3d6d846bad3bb3d456cbc5d07d9fd8c104",
+      "url": "https://github.com/waywardgeek/sonic",
+      "license": "Apache-2.0",
+      "scope": "sonic.c, sonic.h, LICENSE used by upstream configure; speech-rate processing remains disabled.",
+      "file": "third-party/piper-source/sonic.tar.gz",
+      "sha256": "a6aca8fa3c7b3ff1f0988b6d4c94b0fd6a3f2e2331408e1ce5772968f401cd60"
+    }
+  ],
+  "modificationNotice": "Built for ScriptForge October 19, 2026: same Piper API; pinned eSpeak native data and WASM source; existing SDK UCD workaround retained; ES-module export appended; memory growth enabled."
+}

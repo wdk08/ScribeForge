@@ -15,6 +15,7 @@ import { setupReading } from './reading.js';
 import { setupProfanityAnalyzer } from './profanity.js';
 import { setupSettings, setupStyleLibrary } from './settings.js';
 import { autosaver, libraryStore } from './storage.js';
+import { connectUpdates } from './updates.js';
 import { $, connectDesktopClose, connectImport, createManuscript, documentURL, errorMessage, exportBytes, fileName, getPreference, setPreference } from './ui.js';
 
 const store = libraryStore();
@@ -32,7 +33,8 @@ function saveStatus(message, error) {
 }
 
 let flushBeforeLeaving = async () => {};
-connectDesktopClose(() => flushBeforeLeaving(), notice);
+let updates;
+connectDesktopClose(() => flushBeforeLeaving(), notice, () => updates?.busy);
 for (const button of document.querySelectorAll('[data-close]')) {
   button.addEventListener('click', () => button.closest('dialog').close());
 }
@@ -519,6 +521,9 @@ async function start() {
   void document.fonts.ready.then(() => { reflow(manuscript.settings, true); updateStats(); });
   setFocus(getPreference('focus', false));
   view.focus();
+  updates = connectUpdates(async () => {
+    while (saver.dirty) await saver.flush();
+  });
 }
 
 start().catch(error => {

@@ -1,0 +1,26 @@
+@font-face{font-family:'Courier Prime';src:url('../assets/fonts/CourierPrime-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Courier Prime';src:url('../assets/fonts/CourierPrime-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Courier Prime';src:url('../assets/fonts/CourierPrime-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:block}
+@font-face{font-family:'Courier Prime';src:url('../assets/fonts/CourierPrime-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:block}
+/* Geometry comes from screenplay-format.js, including off-screen PDF measurements. */
+.screenplay-page{width:var(--paper-width);height:var(--paper-height);padding:var(--body-top) var(--body-right) var(--body-bottom) var(--body-left);border:0;outline:1px solid var(--sf-dedbd5,#dedbd5)}
+.page-content{width:var(--body-width);height:var(--body-height)}
+.screenplay-element{font-family:'Courier Prime';font-size:var(--screenplay-font-size);line-height:var(--screenplay-line-height);letter-spacing:var(--screenplay-tracking);font-synthesis:none;width:var(--body-width);min-height:var(--screenplay-line-height);word-break:normal;overflow-wrap:anywhere;hyphens:manual}
+.character{margin-left:var(--character-offset);width:var(--character-width)}
+.dialogue{margin-left:var(--dialogue-offset);width:var(--dialogue-width)}
+.parenthetical{margin-left:var(--parenthetical-offset);width:var(--parenthetical-width);text-indent:calc(-1 * var(--parenthetical-hang))}
+.transition{width:var(--transition-width)}
+.transition-left{width:var(--body-width)}
+.dualDialogue{grid-template-columns:var(--dual-width) var(--dual-width);column-gap:var(--dual-gap)}
+.dualColumn .screenplay-element,.dualMeasure{width:var(--dual-width);margin-left:0}
+.dualColumn .character,.dualMeasure.character{margin-left:var(--dual-character-offset);width:var(--dual-character-width)}
+.dualColumn .parenthetical,.dualMeasure.parenthetical{margin-left:var(--dual-parenthetical-offset);width:var(--dual-parenthetical-width)}
+.page-number{left:var(--page-number-x);right:auto;top:var(--page-number-y);font:var(--screenplay-font-size)/var(--screenplay-line-height) 'Courier Prime';letter-spacing:0}
+.screenplay-page[data-page="1"] .page-number{visibility:hidden}
+.continuation{font:var(--screenplay-font-size)/var(--screenplay-line-height) 'Courier Prime';letter-spacing:var(--screenplay-tracking);color:inherit;white-space:pre;overflow:visible;user-select:none}
+.dual-cue-marker{margin-left:var(--dual-character-offset);width:var(--dual-character-width)}
+.measurement{width:var(--body-width)}
+.sceneHeader[data-scene-number]::before{left:var(--scene-number-left);right:auto}
+/* Fixed page gutter, independent of the heading's adjustable writing width. */
+.sceneHeader[data-scene-number]::after{left:calc(var(--scene-number-right) - var(--scene-number-width));right:auto;width:var(--scene-number-width);white-space:nowrap;overflow-wrap:normal;text-align:right}
+@media print{.screenplay-page{padding:var(--body-top) var(--body-right) var(--body-bottom) var(--body-left);outline:0}}

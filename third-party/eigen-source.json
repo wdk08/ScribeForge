@@ -1,0 +1,9 @@
+{
+  "name": "Eigen",
+  "commit": "1d8b82b0740839c0de7f1242a3585e3390ff5f33",
+  "url": "https://gitlab.com/libeigen/eigen",
+  "file": "third-party/eigen-source.tar.gz",
+  "sha256": "7ccf25efe716f2262d30cdea0faa8be7078bbd0e41c821c58f26f41efba74eea",
+  "license": "MPL-2.0 (core); optional source modules retain their separate licenses",
+  "reason": "Original generated GitLab zip failed ONNX pinned SHA1. Exact commit retrieved directly from upstream Git and archived locally; no changed zip was accepted."
+}

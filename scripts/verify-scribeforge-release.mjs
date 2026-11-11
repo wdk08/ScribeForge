@@ -23,7 +23,11 @@ assert.equal(config.identifier, 'com.scribeforge.desktop');
 assert.equal(dev.identifier, 'com.scribeforge.desktop.dev');
 assert.deepEqual(config.bundle.fileAssociations.flatMap(item => item.ext), ['stf']);
 assert.equal(config.bundle.createUpdaterArtifacts, false);
-assert.equal(config.plugins?.updater, undefined);
+assert.deepEqual(config.plugins?.updater, {
+  endpoints: [`${releasePage}/download/latest.json`],
+  pubkey: '',
+  requireSignedVersion: true,
+});
 assert.match(cargo, /^name = "scribeforge"$/m);
 assert.equal(cargo.match(/^\[package\]\r?\nname = "scribeforge"\r?\nversion = "([^"]+)"/m)?.[1], pkg.version);
 assert.equal(cargoLock.match(/^name = "scribeforge"\r?\nversion = "([^"]+)"/m)?.[1], pkg.version);
