@@ -1,6 +1,6 @@
 {
   "name": "scribeforge",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "Local prose-writing room for macOS, Windows, and the browser",

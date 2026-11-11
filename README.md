@@ -1,4 +1,4 @@
-# ScribeForge 1.0.1
+# ScribeForge 1.0.2
 
 ScribeForge is Forge Studios’ local writing room for novels, short fiction, poetry, and other manuscripts. Each manuscript is one continuous rich-text document with a read-only Chapter Navigator.
 
