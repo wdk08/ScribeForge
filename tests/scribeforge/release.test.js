@@ -7,7 +7,7 @@ import { installerPreference, releaseInstallers, releasePage } from '../../js/sc
 import { assembleRelease, targets } from '../../scripts/release-desktop.mjs';
 
 const names = ['ScribeForge_test_aarch64.dmg', 'ScribeForge_test_x86_64.dmg', 'ScribeForge_test_x64-setup.exe'];
-const tag = 'v1.0.0-scribeforge';
+const tag = 'v1.0.1';
 const assets = names.map(name => ({
   name, size: 42, state: 'uploaded', browser_download_url: releasePage.replace('/latest', `/download/${tag}/${name}`),
 }));

@@ -1,13 +1,16 @@
 import { toggleMark } from 'prosemirror-commands';
 import { undo, redo, undoDepth, redoDepth } from 'prosemirror-history';
+import { Selection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
+import { setupCover } from './cover.js';
+import { createPagination } from './pagination.js';
 import { formattedClipboard } from './clipboard.js';
 import { setupToolbarMenus } from '../toolbar-menus.js';
 import { statisticsRows, writingActivity } from './analysis.js';
-import { activeChapter, changeParagraph, editorState, emphasisActive, findMatches, insertPageBreak, manuscriptIndex, replaceMatches, selectRange, selectionFormatting, showMatches, textChanges, toggleEmphasis } from './editing.js';
+import { activeChapter, changeParagraph, chapterOverride, editorState, emphasisActive, findMatches, insertPageBreak, manuscriptIndex, replaceMatches, selectRange, selectionFormatting, showMatches, textChanges, toggleEmphasis } from './editing.js';
 import { exportDocx, exportEpub, exportText } from './formats.js';
-import { applyLayout, estimatePages, exportPDF, setZoom } from './layout.js';
-import { encodeManuscript, customStyleId, markValues, plainText, schema, styleLabel, validId } from './model.js';
+import { applyLayout, exportPDF, setZoom } from './layout.js';
+import { chapterHeading, encodeManuscript, customStyleId, markValues, paragraphStyle, plainText, resolvedParagraph, schema, styleLabel, validId } from './model.js';
 import { setupReading } from './reading.js';
 import { setupProfanityAnalyzer } from './profanity.js';
 import { setupSettings, setupStyleLibrary } from './settings.js';
@@ -25,6 +28,7 @@ function notice(message) {
 function saveStatus(message, error) {
   $('save-state').textContent = message;
   $('save-state').toggleAttribute('data-error', Boolean(error));
+  $('cover-save-state').textContent = message;
 }
 
 let flushBeforeLeaving = async () => {};
@@ -86,6 +90,8 @@ async function start() {
     },
   });
 
+  const reflow = createPagination(view, $('pages'));
+  view.dom.addEventListener('compositionend', () => scheduleIndex());
   const snapshot = () => ({ ...manuscript, content: view.state.doc.toJSON() });
   let committedCopy = false;
   const saver = autosaver({
@@ -204,7 +210,7 @@ async function start() {
   function updateSelection() {
     const { selection, storedMarks } = view.state;
     const { $from } = selection;
-    const style = $from.parent.attrs.style ?? 'normal';
+    const style = paragraphStyle(activeParagraph(), manuscript.settings);
     $('paragraph-style').value = style;
     $('element-status').textContent = styleLabel(style, manuscript.settings);
     const format = selectionFormatting(view.state, manuscript.settings);
@@ -221,7 +227,7 @@ async function start() {
     $('redo').disabled = !redoDepth(view.state);
     for (const button of $('format-toolbar').querySelectorAll('[data-mark]')) {
       const type = schema.marks[button.dataset.mark];
-      const active = ['bold', 'italic', 'underline'].includes(type.name) ? emphasisActive(view.state, type.name, manuscript.settings) :
+      const active = ['bold', 'italic', 'underline', 'strike'].includes(type.name) ? emphasisActive(view.state, type.name, manuscript.settings) :
         selection.empty ? type.isInSet(storedMarks ?? $from.marks()) : view.state.doc.rangeHasMark(selection.from, selection.to, type);
       button.setAttribute('aria-pressed', String(Boolean(active)));
     }
@@ -233,8 +239,8 @@ async function start() {
     previousChapter = chapter;
   }
   function updateStats() {
-    pages = estimatePages(view.dom, manuscript.settings);
-    $('document-stats').textContent = `${ensureIndex().words.toLocaleString()} words · ${pages} est. ${pages === 1 ? 'page' : 'pages'}`;
+    pages = reflow(manuscript.settings).count;
+    $('document-stats').textContent = `${ensureIndex().words.toLocaleString()} words · ${pages} ${pages === 1 ? 'page' : 'pages'}`;
   }
   function renderIndex() {
     renderChapters();
@@ -251,8 +257,12 @@ async function start() {
     $('outline').hidden = !$('outline').hidden;
     event.currentTarget.setAttribute('aria-pressed', String(!$('outline').hidden));
   });
-  $('zoom').addEventListener('change', () => setZoom(manuscript.settings));
-  const resize = new ResizeObserver(() => setZoom(manuscript.settings));
+  const resizePages = () => {
+    setZoom(manuscript.settings);
+    scheduleIndex();
+  };
+  $('zoom').addEventListener('change', resizePages);
+  const resize = new ResizeObserver(resizePages);
   resize.observe($('viewport'));
 
   const commands = (command, focus = true) => {
@@ -267,7 +277,7 @@ async function start() {
   });
   for (const button of $('format-toolbar').querySelectorAll('[data-mark]')) {
     const name = button.dataset.mark;
-    const command = ['bold', 'italic', 'underline'].includes(name) ? toggleEmphasis(name, () => manuscript.settings) : toggleMark(schema.marks[name]);
+    const command = ['bold', 'italic', 'underline', 'strike'].includes(name) ? toggleEmphasis(name, () => manuscript.settings) : toggleMark(schema.marks[name]);
     button.addEventListener('click', () => commands(command));
   }
   for (const [mark, check] of Object.entries(markValues)) {
@@ -419,9 +429,17 @@ async function start() {
     navigate: match => selectRange(view, match.start, match.end),
   });
 
+  function activeParagraph() {
+    const { $head } = view.state.selection;
+    if ($head.parent.isTextblock) return $head.parent;
+    return (Selection.findFrom($head, -1, true) ?? Selection.findFrom($head, 1, true))?.$head.parent;
+  }
   const styleLibrary = setupStyleLibrary({
     settings: () => manuscript.settings,
-    selectedStyle: () => view.state.selection.$from.parent.attrs.style ?? 'normal',
+    selectedStyle: () => paragraphStyle(activeParagraph(), manuscript.settings),
+    activeFormat: () => resolvedParagraph(activeParagraph(), manuscript.settings),
+    activeHeading: () => chapterHeading(activeParagraph(), manuscript.settings),
+    overrideChapter: enabled => commands(chapterOverride(enabled, manuscript.settings)),
     selectionFormat: () => selectionFormatting(view.state, manuscript.settings),
     apply(id, definition, options) {
       if (record.recovered) return;
@@ -431,7 +449,7 @@ async function start() {
         manuscript = { ...manuscript, settings };
         applyLayout(settings);
       }
-      commands(changeParagraph({ style: id }, options));
+      commands(changeParagraph({ style: id, chapterMode: null }, options));
       styleLibrary.refresh();
     },
     focusEditor: () => view.focus(),
@@ -448,12 +466,21 @@ async function start() {
       saver.setEnabled(getPreference('autosave', true));
       saver.changed();
       view.updateState(view.state);
-      updateStats();
-      updateSelection();
+      indexedDoc = null;
+      renderIndex();
     },
     focusEditor: () => view.focus(),
     applyParagraph: fields => commands(changeParagraph(fields)),
     currentParagraph: () => view.state.selection.$from.parent.attrs,
+  });
+
+  setupCover({
+    view, get: () => manuscript, countPages: () => reflow(manuscript.settings).count,
+    editable: () => !record.recovered, save,
+    update(cover) {
+      manuscript = { ...manuscript, cover };
+      saver.changed();
+    },
   });
 
   const exporters = {
@@ -489,6 +516,7 @@ async function start() {
   setupToolbarMenus();
   applyLayout(manuscript.settings);
   renderIndex();
+  void document.fonts.ready.then(() => { reflow(manuscript.settings, true); updateStats(); });
   setFocus(getPreference('focus', false));
   view.focus();
 }

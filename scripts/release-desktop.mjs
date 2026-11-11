@@ -12,6 +12,10 @@ export const targets = {
 const repo = releasePage.replace(/\/latest$/, '');
 const updaterEndpoint = `${releasePage}/download/latest.json`;
 
+export function releaseNotesPath(tag) {
+  return tag.endsWith('-scribeforge') ? `releases/${tag}.md` : `releases/scribeforge/${tag}.md`;
+}
+
 async function filesUnder(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const entriesByPath = await Promise.all(entries.map(entry => {
@@ -143,7 +147,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (command === 'package') await packageDesktop(arg);
   else if (command === 'assemble') {
     const notes = await assembleRelease('dist/downloads', 'dist/release-assets', arg, process.env.SCRIBEFORGE_UPDATER_PUBLIC_KEY);
-    const releaseNotes = await readFile(`releases/${arg}.md`, 'utf8');
+    const releaseNotes = await readFile(releaseNotesPath(arg), 'utf8');
     await writeFile('dist/release-notes.md', `${releaseNotes.trimEnd()}\n\n### Installer signing\n\n${notes.join('\n')}\n`);
   } else throw new Error('Expected package or assemble.');
 }

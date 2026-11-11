@@ -56,7 +56,7 @@ export function statisticsRows(index, pages, activity) {
   const duration = ms => `${Math.floor(ms / 3600000)} h ${Math.floor(ms / 60000) % 60} m`;
   return [
     ['Words', number(index.words)], ['Characters', number(index.characters)], ['Characters excluding spaces', number(index.nonSpace)],
-    ['Paragraphs', number(index.paragraphs)], ['Chapters', number(index.chapters.length)], ['Estimated pages', number(pages)],
+    ['Paragraphs', number(index.paragraphs)], ['Chapters', number(index.chapters.length)], ['Manuscript pages', number(pages)],
     ['Active writing time', duration(activity.activeMs)], ['Editing time', duration(activity.editingMs)],
     ['Words added', number(activity.added)], ['Words deleted', number(activity.deleted)], ['Net word changes', number(activity.added - activity.deleted)],
     ['Writing sessions', number(activity.sessions)], ['Words per active hour', activity.activeMs > 0 ? number(Math.round(activity.added * 3600000 / activity.activeMs)) : '—'],

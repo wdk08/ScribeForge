@@ -1,6 +1,6 @@
 {
   "name": "scribeforge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "Local prose-writing room for macOS, Windows, and the browser",
@@ -17,6 +17,7 @@
     "test:browser": "playwright test",
     "test:desktop": "npm run build:desktop:dev && cargo test --manifest-path src-tauri/Cargo.toml",
     "tauri": "tauri",
+    "release": "node scripts/release.mjs",
     "verify:release": "node scripts/verify-scribeforge-release.mjs",
     "test:pages": "playwright test --config playwright.pages.config.js"
   },
@@ -32,6 +33,7 @@
   "dependencies": {
     "esbuild": "0.28.2",
     "fflate": "0.8.3",
+    "jspdf": "4.2.1",
     "prosemirror-commands": "1.7.2",
     "prosemirror-history": "1.5.1",
     "prosemirror-keymap": "1.2.3",

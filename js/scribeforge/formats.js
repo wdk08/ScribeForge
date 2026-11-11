@@ -1,5 +1,5 @@
 import { unzipSync, zipSync, strToU8, strFromU8 } from 'fflate';
-import { decodeManuscript, defaultSettings, newManuscript, pageDimensions, paragraphFields, plainText, resolvedStyle, schema, styleFields, styleLabel, styleTag, styleValue, styles, isChapterStyle } from './model.js';
+import { chapterHeading, decodeManuscript, defaultSettings, newManuscript, pageDimensions, pageSizes, paragraphStyle, paragraphFields, plainText, resolvedStyle, schema, styleFields, styleLabel, styleTag, styleValue, styles, isChapterStyle } from './model.js';
 import { manuscriptIndex } from './editing.js';
 
 export const MAX_IMPORT = 50 * 1024 * 1024;
@@ -12,9 +12,9 @@ const twip = pt => Math.round(pt * 20);
 const css = (fields, definitions) => Object.entries(fields).filter(([key, value]) => Object.hasOwn(definitions, key) && value !== null)
   .map(([key, value]) => `${definitions[key].css}:${styleValue(key, value)}`).join(';');
 const styleIds = settings => [...Object.keys(styles), ...Object.keys(settings.customStyles ?? {})];
-export const proseStyleCSS = settings => styleIds(settings).map(key => {
-  const { underline: _underline, ...fields } = resolvedStyle(key, settings);
-  return `[data-prose-style="${key}"]{${css(fields, styleFields)}}`;
+export const proseStyleCSS = (settings, scope = '') => styleIds(settings).map(key => {
+  const { underline, strike, highlight, ...fields } = resolvedStyle(key, settings);
+  return `${scope}[data-prose-style="${key}"]:not([data-active-style]),${scope}[data-active-style="${key}"]{${css(fields, styleFields)}}`;
 }).join('\n');
 const inlineMarkup = {
   bold: 'strong', italic: 'em', underline: 'u', strike: 's', superscript: 'sup', subscript: 'sub',
@@ -22,17 +22,23 @@ const inlineMarkup = {
 const markCSS = {
   font: value => `font-family:${styleValue('font', value)}`, size: value => `font-size:${value}pt`,
   color: value => `color:${value}`, highlight: value => `background-color:${value}`,
-  unbold: () => 'font-weight:normal', unitalic: () => 'font-style:normal', ununderline: () => 'text-decoration:none',
+  unbold: () => 'font-weight:normal', unitalic: () => 'font-style:normal', ununderline: () => 'text-decoration:none', unstrike: () => 'text-decoration:none',
 };
 function xhtmlBlock(node, inferredHeading, settings) {
   if (node.type === schema.nodes.page_break) return '<hr class="page-break" aria-label="Page break"/>';
-  const { style, ...overrides } = node.attrs;
+  const style = paragraphStyle(node, settings);
+  const { style: _style, ...overrides } = node.attrs;
+  const format = resolvedStyle(style, settings);
   const tag = inferredHeading ? 'h1' : styleTag(style, settings);
   let result = '';
   node.forEach(inline => {
     let text = inline.isText ? escapeXML(inline.text) : '<br/>';
-    if (inline.isText && resolvedStyle(style, settings).underline &&
-      !inline.marks.some(mark => ['underline', 'ununderline'].includes(mark.type.name))) text = `<u>${text}</u>`;
+    if (inline.isText) {
+      for (const [property, tag] of [['underline', 'u'], ['strike', 's']]) {
+        if (format[property] && !inline.marks.some(mark => [property, `un${property}`].includes(mark.type.name))) text = `<${tag}>${text}</${tag}>`;
+      }
+      if (format.highlight && !schema.marks.highlight.isInSet(inline.marks)) text = `<span style="background-color:${format.highlight}">${text}</span>`;
+    }
     for (const mark of [...inline.marks].reverse()) {
       const name = mark.type.name;
       const tag = inlineMarkup[name] ?? 'span';
@@ -82,7 +88,7 @@ const val = (tag, value) => w(tag, { val: value });
 const docxProps = {
   bold: v => val('b', v === false ? 0 : 1), italic: v => val('i', v === false ? 0 : 1), underline: () => val('u', 'single'),
   unbold: () => val('b', 0), unitalic: () => val('i', 0), ununderline: () => val('u', 'none'),
-  strike: () => val('strike', 1), superscript: () => val('vertAlign', 'superscript'), subscript: () => val('vertAlign', 'subscript'),
+  strike: value => val('strike', value === false ? 0 : 1), unstrike: () => val('strike', 0), superscript: () => val('vertAlign', 'superscript'), subscript: () => val('vertAlign', 'subscript'),
   font: v => w('rFonts', { ascii: v, hAnsi: v, eastAsia: v, cs: v }),
   size: v => val('sz', Math.round(v * 2)), color: v => val('color', v.slice(1).toUpperCase()),
   highlight: v => w('shd', { val: 'clear', fill: v.slice(1).toUpperCase() }),
@@ -120,7 +126,7 @@ export function exportDocx(manuscript) {
       content += w('p', {}, w('r', {}, w('br', { type: 'page' })));
       return;
     }
-    let body = w('pPr', {}, val('pStyle', wordStyle(node.attrs.style)) + paragraphProperties(node.attrs));
+    let body = w('pPr', {}, val('pStyle', wordStyle(paragraphStyle(node, settings))) + (chapterHeading(node, settings) ? w('keepNext') : '') + paragraphProperties(node.attrs) + (chapterHeading(node, settings) ? val('outlineLvl', 0) : ''));
     node.forEach(inline => {
       const properties = inline.marks.map(mark => docxProps[mark.type.name](mark.attrs.value)).join('');
       body += w('r', {}, (properties ? w('rPr', {}, properties) : '') + (inline.isText ? docxText(inline.text) : w('br')));
@@ -131,7 +137,7 @@ export function exportDocx(manuscript) {
     const fields = resolvedStyle(key, settings);
     const outline = isChapterStyle(key, settings) ? 0 : ['chapter', 'section', 'subheading'].indexOf(key);
     const pp = paragraphProperties(fields) + (outline >= 0 ? val('outlineLvl', outline) : '');
-    const rp = ['font', 'size', 'bold', 'italic', 'color'].filter(key => Object.hasOwn(fields, key)).map(key => docxProps[key](fields[key])).join('') +
+    const rp = ['font', 'size', 'bold', 'italic', 'color', 'strike', 'highlight'].filter(key => Object.hasOwn(fields, key)).map(key => docxProps[key](fields[key])).join('') +
       (fields.underline ? docxProps.underline() : '');
     return w('style', { type: 'paragraph', styleId: wordStyle(key), default: key === 'normal' ? 1 : null },
       val('name', styleLabel(key, settings)) + (key === 'normal' ? '' : val('basedOn', 'Normal')) + w('pPr', {}, pp) + w('rPr', {}, rp));
@@ -251,9 +257,9 @@ export function importDocx(bytes, fallbackTitle) {
   const height = scaled(attr(page, 'h'), 20);
   if (width >= 216 && width <= 1440 && height >= 216 && height <= 1440) {
     Object.assign(manuscript.settings, { pageSize: 'custom', width, height });
-    for (const preset of ['letter', 'a4']) {
-      const size = pageDimensions({ pageSize: preset });
-      if (Math.abs(size.width - width) < 0.1 && Math.abs(size.height - height) < 0.1) manuscript.settings.pageSize = preset;
+    manuscript.settings.orientation = width > height ? 'landscape' : 'portrait';
+    for (const [preset, size] of Object.entries(pageSizes)) {
+      if (Math.abs(size.width - Math.min(width, height)) < 0.1 && Math.abs(size.height - Math.max(width, height)) < 0.1) manuscript.settings.pageSize = preset;
     }
   } else if (page) warnings.add('Unsupported page dimensions use ScribeForge defaults.');
   for (const side of ['left', 'right', 'top', 'bottom']) {
@@ -313,7 +319,7 @@ export function importDocx(bytes, fallbackTitle) {
           const values = { ...defaultRun, ...style.run, ...direct };
           const marks = [];
           for (const [key, value] of Object.entries(values)) {
-            if (['bold', 'italic', 'underline'].includes(key)) {
+            if (['bold', 'italic', 'underline', 'strike'].includes(key)) {
               if (Object.hasOwn(direct, key) || value !== Boolean(presentation[key])) marks.push(schema.marks[value ? key : `un${key}`].create());
             } else if (value && schema.marks[key]) {
               const inheritedValue = presentation[key] ?? manuscript.settings[key];

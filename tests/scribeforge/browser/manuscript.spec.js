@@ -81,7 +81,7 @@ test('DOCX import and exports round-trip styling, Unicode, page breaks and book 
   expect(strFromU8(epub['EPUB/nav.xhtml'])).toContain('Chapter Two');
   await page.getByRole('link', { name: 'Home' }).click();
   await importFile(page, 'Word Copy.docx', docx);
-  await expect(editor(page).locator('h1')).toHaveText('Opening');
+  await expect(editor(page).locator('h1')).toHaveText(['Opening', 'Chapter Two']);
   await expect(editor(page).locator('strong')).toHaveText('Snow');
   await expect(editor(page).locator('em')).toHaveText('fall 雪 🐉');
   await expect(editor(page).locator('hr[data-page-break]')).toHaveCount(1);

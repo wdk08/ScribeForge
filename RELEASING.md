@@ -8,6 +8,6 @@ For Apple Developer ID signing, configure the ScribeForge repository secrets `AP
 
 For optional signed update assets, set the repository variable `SCRIBEFORGE_UPDATER_PUBLIC_KEY` and the matching `TAURI_SIGNING_PRIVATE_KEY` secret. Provide `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` if the key is encrypted. Publishing verifies all update signatures and emits a ScribeForge-only `latest.json` manifest when the complete signing configuration is present. The v1.0.0 application uses manual downloads. Its production bundle identifier is `com.scribeforge.desktop`, and development uses `com.scribeforge.desktop.dev`.
 
-Run `npm run verify:release -- v1.0.0-scribeforge` before tagging. See [README.md](README.md) for the local checks.
+Use the [manual release command](RELEASE.md) to validate and push a new version tag.
 
 The renamed 1.0.0 build uses the tag `v1.0.0-scribeforge`. The original v1.0.0 tag continues to identify the earlier build.

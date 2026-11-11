@@ -145,7 +145,7 @@ async fn desktop_export(
 ) -> Result<()> {
     let extension = name.rsplit('.').next().unwrap_or_default();
     if name.contains(['/', '\\', ':'])
-        || !["stf", "txt", "docx", "epub", "pdf"].contains(&extension)
+        || !["stf", "txt", "docx", "epub", "pdf", "png"].contains(&extension)
     {
         return Err(Failure::new("FileError", "Invalid export filename."));
     }

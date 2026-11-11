@@ -2,7 +2,7 @@ name: ScribeForge desktop release
 
 on:
   push:
-    tags: ['v1.0.0-scribeforge']
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
 
 permissions:
   contents: read
@@ -111,5 +111,5 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           gh release create "$RELEASE_TAG" dist/release-assets/* \
-            --verify-tag --latest --title "ScribeForge v1.0.0 — Initial Release" \
+            --verify-tag --latest --title "ScribeForge ${RELEASE_TAG%-scribeforge}" \
             --notes-file dist/release-notes.md

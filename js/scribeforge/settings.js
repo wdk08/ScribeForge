@@ -1,18 +1,24 @@
-import { defaultSettings, fontName, isChapterStyle, paragraphFields, resolvedStyle, styleFields, styleLabel, styles, validCustomStyle, validateSettings } from './model.js';
+import { defaultSettings, fontName, paragraphFields, styleFields, styleLabel, styles, validCustomStyle, validateSettings } from './model.js';
 import { $, errorMessage, getPreference, setPreference } from './ui.js';
 
 const styleOptions = Object.entries(styles).map(([key, { label }]) => [key, label]);
 const alignOptions = ['left', 'center', 'right', 'justify'].map(value => [value, value[0].toUpperCase() + value.slice(1)]);
-const pageOptions = [['letter', 'US Letter'], ['a4', 'A4'], ['custom', 'Custom']];
+const pageOptions = [['letter', 'US Letter'], ['a4', 'A4'], ['a5', 'A5'], ['custom', 'Custom']];
+const readStyleLibrary = () => Object.fromEntries(Object.entries(getPreference('paragraph-styles', {}))
+  .filter(([id, style]) => validCustomStyle(id, style)));
+
 const writing = {
   author: { label: 'Author', type: 'text', maxLength: 200 },
   font: { label: 'Default font', list: 'fonts', maxLength: 80 },
   size: styleFields.size, leading: paragraphFields.leading,
   defaultStyle: { label: 'Default paragraph style', options: styleOptions },
+  chapterStyle: { label: 'Automatic chapter heading style', options: styleOptions },
+  indentStep: { label: 'Tab indentation (pt)', min: 1, max: 144 },
 };
 const marginFields = Object.fromEntries(['top', 'right', 'bottom', 'left'].map(side => [side, { label: `${side[0].toUpperCase() + side.slice(1)} margin (pt)`, min: 0, max: 288 }]));
 const page = {
   pageSize: { label: 'Page size', options: pageOptions },
+  orientation: { label: 'Orientation', options: [['portrait', 'Portrait'], ['landscape', 'Landscape']] },
   width: { label: 'Custom width (pt)', min: 216, max: 1440 }, height: { label: 'Custom height (pt)', min: 216, max: 1440 },
   ...marginFields,
   header: { label: 'Header text', maxLength: 200 }, footer: { label: 'Footer text', maxLength: 200 },
@@ -22,6 +28,7 @@ const styleDefs = { ...styleFields,
   font: { ...styleFields.font, list: 'fonts', maxLength: 80 },
   bold: { ...styleFields.bold, options: [['true', 'Bold'], ['false', 'Regular']], parse: value => value === 'true' },
   italic: { ...styleFields.italic, options: [['true', 'Italic'], ['false', 'Regular']], parse: value => value === 'true' },
+  strike: { ...styleFields.strike, options: [['true', 'Struck through'], ['false', 'Regular']], parse: value => value === 'true' },
   underline: { ...styleFields.underline, options: [['true', 'Underlined'], ['false', 'Regular']], parse: value => value === 'true' },
 };
 
@@ -78,8 +85,12 @@ export function setupSettings({ get, apply, focusEditor, applyParagraph, current
     const manuscript = get();
     const defaultStyleOptions = [...styleOptions, ...Object.entries(manuscript.settings.customStyles ?? {}).map(([id, style]) => [id, style.name])];
     options($('writing-fields').querySelector('[name="defaultStyle"]'), defaultStyleOptions);
-    writingFields.fill({ ...manuscript.settings, author: manuscript.metadata.author });
-    pageFields.fill(manuscript.settings);
+    const availableStyles = { ...readStyleLibrary(), ...manuscript.settings.customStyles };
+    options($('writing-fields').querySelector('[name="chapterStyle"]'),
+      [...styleOptions, ...Object.entries(availableStyles).map(([id, style]) => [id, style.name])]);
+    writingFields.fill({ chapterStyle: 'chapter', indentStep: 36, ...manuscript.settings, author: manuscript.metadata.author });
+    pageFields.fill({ ...manuscript.settings, orientation: manuscript.settings.orientation ??
+      (manuscript.settings.pageSize === 'custom' && manuscript.settings.width > manuscript.settings.height ? 'landscape' : 'portrait') });
     customStyles = structuredClone(manuscript.settings.styles);
     $('custom-style').value = selected = 'normal';
     styleFields.fill(customStyles[selected] ?? {});
@@ -107,7 +118,11 @@ export function setupSettings({ get, apply, focusEditor, applyParagraph, current
     try {
       captureStyle();
       const { author, ...writer } = writingFields.read();
-      const settings = validateSettings({ ...defaultSettings, ...get().settings, ...writer, ...pageFields.read(), styles: customStyles });
+      const embedded = { ...get().settings.customStyles };
+      const definition = readStyleLibrary()[writer.chapterStyle];
+      if (!embedded[writer.chapterStyle] && definition) embedded[writer.chapterStyle] = definition;
+      const settings = validateSettings({ ...defaultSettings, ...get().settings, ...writer, ...pageFields.read(),
+        styles: customStyles, customStyles: embedded });
       if (!fontName(settings.font)) throw new Error('Enter a valid font name.');
       if ($('set-defaults').checked) setPreference('defaults', settings);
       for (const key of ['autosave', 'activity', 'focus']) setPreference(key, $(`setting-${key}`).checked);
@@ -138,9 +153,8 @@ export function setupSettings({ get, apply, focusEditor, applyParagraph, current
 }
 
 
-export function setupStyleLibrary({ settings, selectedStyle, selectionFormat, apply, focusEditor, report }) {
-  const readLibrary = () => Object.fromEntries(Object.entries(getPreference('paragraph-styles', {}))
-    .filter(([id, style]) => validCustomStyle(id, style)));
+export function setupStyleLibrary({ settings, selectedStyle, selectionFormat, activeFormat, activeHeading, apply, overrideChapter, focusEditor, report }) {
+  const readLibrary = readStyleLibrary;
   const writeLibrary = value => setPreference('paragraph-styles', value);
   const dialog = $('style-library-dialog');
   const picker = $('saved-style');
@@ -156,7 +170,8 @@ export function setupStyleLibrary({ settings, selectedStyle, selectionFormat, ap
     const embedded = Object.entries(settings().customStyles ?? {}).filter(([id]) => !library[id]);
     options(toolbar, [...styleOptions, ...Object.entries(library).map(([id, style]) => [id, style.name]),
       ...embedded.map(([id, style]) => [id, `${style.name} (manuscript)`]),
-      ['create-style', 'Create Style from Selection…'], ['manage-styles', 'Manage Styles…']]);
+      ['create-style', 'Create Style from Selection…'], ['manage-styles', 'Manage Styles…'],
+      ['chapter-off', 'Treat selection as body text'], ['chapter-auto', 'Restore automatic chapter heading']]);
     toolbar.value = selectedStyle();
   }
   function loadStyle(id, definition = null) {
@@ -173,11 +188,13 @@ export function setupStyleLibrary({ settings, selectedStyle, selectionFormat, ap
   }
   function open(create) {
     if (create) {
-      const selected = selectedStyle();
-      const effective = { ...resolvedStyle(selected, settings()) };
-      for (const [key, value] of Object.entries(selectionFormat())) if (value != null) effective[key] = value;
+      const effective = activeFormat();
+      const selection = selectionFormat();
+      const mixed = Object.values(selection).some(value => value === null);
+      for (const [key, value] of Object.entries(selection)) if (value != null) effective[key] = value;
       const fields = Object.fromEntries(Object.keys(styleFields).filter(key => effective[key] !== undefined).map(key => [key, effective[key]]));
-      loadStyle('', { name: '', role: isChapterStyle(selected, settings()) ? 'chapter' : 'paragraph', fields });
+      loadStyle('', { name: '', role: activeHeading() ? 'chapter' : 'paragraph', fields });
+      if (mixed) $('style-library-error').textContent = 'Mixed formatting uses the active paragraph’s resolved style.';
     } else loadStyle(readLibrary()[selectedStyle()] ? selectedStyle() : Object.keys(readLibrary())[0] ?? '');
     $('clear-style-overrides').checked = false;
     dialog.showModal();
@@ -188,6 +205,7 @@ export function setupStyleLibrary({ settings, selectedStyle, selectionFormat, ap
     const id = toolbar.value;
     toolbar.value = selectedStyle();
     if (id === 'create-style' || id === 'manage-styles') { open(id === 'create-style'); return; }
+    if (id === 'chapter-off' || id === 'chapter-auto') { overrideChapter(id === 'chapter-auto'); return; }
     try { apply(id, settings().customStyles?.[id] ?? readLibrary()[id]); }
     catch (error) { report(errorMessage(error)); }
   });

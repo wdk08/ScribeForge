@@ -53,6 +53,7 @@ export async function addImport(store, manuscript) {
     const current = existing.current;
     if (stableJSON(current.metadata) === stableJSON(manuscript.metadata) &&
       stableJSON(current.settings) === stableJSON(manuscript.settings) &&
+      stableJSON(current.cover) === stableJSON(manuscript.cover) &&
       schema.nodeFromJSON(current.content).eq(schema.nodeFromJSON(manuscript.content))) return manuscript.documentId;
   }
   if (existing) {

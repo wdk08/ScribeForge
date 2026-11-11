@@ -1,8 +1,10 @@
-# ScribeForge 1.0.0
+# ScribeForge 1.0.1
 
 ScribeForge is Forge Studios’ local writing room for novels, short fiction, poetry, and other manuscripts. Each manuscript is one continuous rich-text document with a read-only Chapter Navigator.
 
 Use [ScribeForge in your browser](https://wdk08.github.io/ScribeForge/) or see the [desktop downloads](https://github.com/wdk08/ScribeForge/releases/latest).
+
+See [RELEASE.md](RELEASE.md) for the manual release command.
 
 ## Development
 
@@ -19,8 +21,8 @@ On the first launch, ScribeForge copies the previous StoryForge manuscript libra
 
 ## File formats
 
-- **STF** preserves manuscript IDs, metadata, page settings, paragraph styles, formatting, and manual page breaks. Importing a changed file whose ID is already present asks before creating a separate copy.
-- **PDF** uses the system print panel. Choose **Save as PDF**, use 100% scale, and turn off browser-generated headers and footers. Support for custom PDF headers, footers, and page counters varies by print engine. The on-screen writing surface scrolls continuously and shows estimated pages. Print performs final pagination.
+- **STF** preserves manuscript IDs, metadata, page settings, paragraph styles, formatting, manual page breaks, and editable covers. Importing a changed file whose ID is already present asks before creating a separate copy.
+- **PDF** uses the system print panel. Choose **Save as PDF**, use 100% scale, and turn off browser-generated headers and footers. Support for custom PDF headers, footers, and page counters varies by print engine. The editor flows text across visible pages. The print engine calculates its own page breaks and may paginate differently.
 - **DOCX** preserves supported run and paragraph formatting. Word and ScribeForge can lay out the same fonts differently. Tables become paragraphs, link labels become text, and advanced Word features such as embedded objects, tracked deletions, fields, and list numbering can require conversion. ScribeForge reports detected import limitations before creating a manuscript.
 - **EPUB** uses reflowable sections and semantic headings. Reading apps control final fonts and page layout. EPUB import is unavailable.
 - **TXT** uses UTF-8 and retains text, paragraphs, and form-feed page breaks.
@@ -28,5 +30,7 @@ On the first launch, ScribeForge copies the previous StoryForge manuscript libra
 The library card menu exports portable STF copies and supports undoable removal from the managed library. **Writing Statistics** shows library totals and recent activity. Typing and editing metrics are estimates based on local editor activity.
 
 The paragraph-style selector includes **Create Style from Selection** and **Manage Styles**. A manuscript embeds applied style definitions. Editing or deleting a style in the shared library leaves existing manuscript definitions intact. The toolbar displays the selection’s resolved fonts, sizes, and alignment.
+
+**Cover** opens the design workspace for the current manuscript. Choose a front cover, a front and back cover, or a full wrap with a spine based on manuscript page count and paper thickness. Cover PNG and raster PDF exports are separate from the manuscript and omit the editing guides.
 
 **Read to Me** uses one installed local speech voice. Voice availability depends on the browser and operating system. The Profanity Analyzer uses the ScriptForge v1.2.0 dictionary, with chapter filters and links to prose occurrences. The existing ScriptForge GPL license and attribution are retained. Desktop updates use the release downloads.

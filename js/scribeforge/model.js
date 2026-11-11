@@ -1,3 +1,4 @@
+import { validateCover } from './cover-model.js';
 import { Schema } from 'prosemirror-model';
 
 export const styles = {
@@ -39,6 +40,8 @@ export const styleFields = {
   italic: { label: 'Italic', check: bool, css: 'font-style' },
   underline: { label: 'Underline', check: bool, css: 'text-decoration' },
   color: { label: 'Text color', check: color, css: 'color' },
+  strike: { label: 'Strikethrough', check: bool, css: 'text-decoration' },
+  highlight: { label: 'Highlight color', check: color, css: 'background-color' },
 };
 export const defaultSettings = {
   font: 'Georgia', size: 12, leading: 1.5, defaultStyle: 'normal',
@@ -55,10 +58,33 @@ export const validCustomStyle = (id, style) => customStyleId(id) && keys(style, 
 export const styleLabel = (id, settings) => settings.customStyles?.[id]?.name ?? styles[id]?.label ?? styles.normal.label;
 export const isChapterStyle = (id, settings) => id === 'chapter' || settings?.customStyles?.[id]?.role === 'chapter';
 export const styleTag = (id, settings) => isChapterStyle(id, settings) ? 'h1' : styles[id]?.tag ?? 'p';
+const chapterNumber = '(?:[0-9]+|[ivxlcdm]+|(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand)(?:[ -](?:one|two|three|four|five|six|seven|eight|nine|hundred|thousand))*)';
+const automaticHeading = new RegExp(`^chapter\\s+${chapterNumber}(?:\\s*[:–—-]\\s*[^\\n]*)?$`, 'iu');
+
+export function automaticChapter(node, settings) {
+  if (node?.type.name !== 'paragraph' || node.attrs.chapterMode === 'off' || isChapterStyle(node.attrs.style, settings)) return false;
+  return automaticHeading.test(node.textContent.trim());
+}
+
+export function paragraphStyle(node, settings) {
+  return automaticChapter(node, settings) ? settings?.chapterStyle ?? 'chapter' : node?.attrs.style ?? 'normal';
+}
+
+export function chapterHeading(node, settings) {
+  return node?.attrs.chapterMode !== 'off' &&
+    (isChapterStyle(node?.attrs.style, settings) || automaticChapter(node, settings));
+}
+
+export function resolvedParagraph(node, settings) {
+  const format = resolvedStyle(paragraphStyle(node, settings), settings);
+  for (const key of Object.keys(paragraphFields)) if (node?.attrs[key] != null) format[key] = node.attrs[key];
+  return format;
+}
+
 export function resolvedStyle(id, settings) {
   return {
     font: settings.font, size: settings.size, leading: settings.leading, align: 'left',
-    indent: 0, left: 0, right: 0, before: 0, after: 6, bold: false, italic: false, underline: false,
+    indent: 0, left: 0, right: 0, before: 0, after: 6, bold: false, italic: false, underline: false, strike: false,
     ...settings.styles.normal,
     ...(builtInStyle(id) ? styles[id] : settings.customStyles?.[id]?.fields),
     ...settings.styles[id],
@@ -67,24 +93,35 @@ export function resolvedStyle(id, settings) {
 
 const settingsChecks = {
   font: fontName, size, leading: paragraphFields.leading.check, defaultStyle: styleName,
-  pageSize: oneOf('letter', 'a4', 'custom'), width: between(216, 1440), height: between(216, 1440),
+  pageSize: oneOf('letter', 'a4', 'a5', 'custom'), width: between(216, 1440), height: between(216, 1440),
   top: between(0, 288), bottom: between(0, 288), left: between(0, 288), right: between(0, 288),
   header: shortText, footer: shortText, pageNumbers: bool,
   styles: value => record(value) && Object.entries(value).every(([name, fields]) =>
     builtInStyle(name) && validStyleFields(fields)),
 };
+export const pageSizes = {
+  letter: { width: 612, height: 792 },
+  a4: { width: 595.28, height: 841.89 },
+  a5: { width: 419.53, height: 595.28 },
+};
+
 export function pageDimensions(settings) {
-  if (settings.pageSize === 'a4') return { width: 595.28, height: 841.89 };
-  if (settings.pageSize === 'letter') return { width: 612, height: 792 };
-  return { width: settings.width, height: settings.height };
+  const { width, height } = pageSizes[settings.pageSize] ?? settings;
+  if (!settings.orientation) return { width, height };
+  const short = Math.min(width, height);
+  const long = Math.max(width, height);
+  return settings.orientation === 'landscape' ? { width: long, height: short } : { width: short, height: long };
 }
 
 export function validateSettings(settings) {
-  if (!record(settings) || !keys(settings, Object.keys(settingsChecks), ['customStyles']) ||
+  if (!record(settings) || !keys(settings, Object.keys(settingsChecks), ['customStyles', 'orientation', 'indentStep', 'chapterStyle']) ||
     !Object.entries(settingsChecks).every(([key, check]) => check(settings[key])) ||
     (Object.hasOwn(settings, 'customStyles') && (!record(settings.customStyles) ||
       !Object.entries(settings.customStyles).every(([id, style]) => validCustomStyle(id, style)))) ||
-    (customStyleId(settings.defaultStyle) && !Object.hasOwn(settings.customStyles ?? {}, settings.defaultStyle))) {
+    (settings.orientation !== undefined && !['portrait', 'landscape'].includes(settings.orientation)) ||
+    (settings.indentStep !== undefined && !between(1, 144)(settings.indentStep)) ||
+    (settings.chapterStyle !== undefined && !styleName(settings.chapterStyle)) ||
+    [settings.defaultStyle, settings.chapterStyle].some(id => customStyleId(id) && !Object.hasOwn(settings.customStyles ?? {}, id))) {
     throw new Error('The manuscript contains invalid page settings or paragraph styles.');
   }
   const { width, height } = pageDimensions(settings);
@@ -96,10 +133,12 @@ export function validateSettings(settings) {
 
 const paragraphAttrs = {
   style: { default: 'normal' },
+  chapterMode: { default: null },
   ...Object.fromEntries(Object.keys(paragraphFields).map(key => [key, { default: null }])),
 };
 const attrValidators = {
   style: styleName,
+  chapterMode: oneOf(null, 'off'),
   ...Object.fromEntries(Object.entries(paragraphFields).map(([key, field]) => [key, nullable(field.check)])),
 };
 
@@ -112,8 +151,9 @@ export function styleValue(key, value) {
 }
 
 function paragraphDOM(node) {
-  const { style, ...overrides } = node.attrs;
+  const { style, chapterMode, ...overrides } = node.attrs;
   const attrs = { 'data-prose-style': style };
+  if (chapterMode === 'off') attrs['data-chapter-mode'] = 'off';
   const declarations = [];
   for (const [key, value] of Object.entries(overrides)) {
     if (value === null) continue;
@@ -126,7 +166,7 @@ function paragraphDOM(node) {
 
 function parseParagraph(dom, fallback) {
   const style = dom.dataset.proseStyle;
-  const attrs = { style: builtInStyle(style) ? style : fallback };
+  const attrs = { style: builtInStyle(style) ? style : fallback, chapterMode: dom.dataset.chapterMode === 'off' ? 'off' : null };
   for (const [key, { css, check, unit }] of Object.entries(paragraphFields)) {
     const raw = dom.dataset[`prose${key[0].toUpperCase()}${key.slice(1)}`];
     const cssValue = dom.style.getPropertyValue(css);
@@ -190,7 +230,8 @@ export const schema = new Schema({
     unitalic: { excludes: 'italic', parseDOM: [{ style: 'font-style=normal' }], toDOM: () => ['span', { style: 'font-style:normal' }, 0] },
     ununderline: { excludes: 'underline', parseDOM: [{ tag: 'span[data-prose-no-underline]' }], toDOM: () => ['span', { 'data-prose-no-underline': '' }, 0] },
     underline: { excludes: 'ununderline', parseDOM: [{ tag: 'u' }, { style: 'text-decoration', getAttrs: value => value.includes('underline') ? null : false }], toDOM: () => ['u', 0] },
-    strike: { parseDOM: [{ tag: 's' }, { tag: 'del' }, { tag: 'strike' }, { style: 'text-decoration', getAttrs: value => value.includes('line-through') ? null : false }], toDOM: () => ['s', 0] },
+    unstrike: { excludes: 'strike', parseDOM: [{ tag: 'span[data-prose-no-strike]' }], toDOM: () => ['span', { 'data-prose-no-strike': '' }, 0] },
+    strike: { excludes: 'unstrike', parseDOM: [{ tag: 's' }, { tag: 'del' }, { tag: 'strike' }, { style: 'text-decoration', getAttrs: value => value.includes('line-through') ? null : false }], toDOM: () => ['s', 0] },
     superscript: { excludes: 'subscript', parseDOM: [{ tag: 'sup' }], toDOM: () => ['sup', 0] },
     subscript: { excludes: 'superscript', parseDOM: [{ tag: 'sub' }], toDOM: () => ['sub', 0] },
     font: styledMark('span', 'font-family', fontName, value => value.split(',')[0].trim().replace(/^["']|["']$/g, ''), value => styleValue('font', value)),
@@ -217,7 +258,7 @@ function validateMarks(marks) {
     if (check ? !keys(mark.attrs, ['value']) || !check(mark.attrs.value) : Object.hasOwn(mark, 'attrs')) return false;
     types.add(mark.type);
   }
-  return ![['subscript', 'superscript'], ['bold', 'unbold'], ['italic', 'unitalic'], ['underline', 'ununderline']].some(pair => pair.every(type => types.has(type)));
+  return ![['subscript', 'superscript'], ['bold', 'unbold'], ['italic', 'unitalic'], ['underline', 'ununderline'], ['strike', 'unstrike']].some(pair => pair.every(type => types.has(type)));
 }
 
 function validInline(node) {
@@ -243,13 +284,14 @@ export function decodeManuscript(value) {
   catch { throw new Error('This file does not contain valid ScribeForge JSON.'); }
   if (!record(document) || document.format !== 'storyforge') throw new Error('This is not a ScribeForge manuscript.');
   if (document.version !== 1) throw new Error(`Unsupported ScribeForge document version ${String(document.version)}.`);
-  if (!keys(document, ['format', 'version', 'documentId', 'metadata', 'settings', 'content']) || !validId(document.documentId) ||
+  if (!keys(document, ['format', 'version', 'documentId', 'metadata', 'settings', 'content'], ['cover']) || !validId(document.documentId) ||
     !keys(document.metadata, ['title', 'author']) || !Object.values(document.metadata).every(shortText) ||
     !keys(document.content, ['type', 'content']) || document.content.type !== 'doc' ||
     !Array.isArray(document.content.content) || !document.content.content.length || !document.content.content.every(validBlock)) {
     throw new Error('The manuscript contains invalid or unsupported content. The original file was preserved.');
   }
   validateSettings(document.settings);
+  if (Object.hasOwn(document, 'cover')) validateCover(document.cover, fontName);
   if (document.content.content.some(block => customStyleId(block.attrs?.style) &&
     !Object.hasOwn(document.settings.customStyles ?? {}, block.attrs.style))) {
     throw new Error('The manuscript is missing a custom paragraph style.');

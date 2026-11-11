@@ -16,9 +16,9 @@ export function applyLayout(settings) {
   paper.setProperty('--prose-font', styleValue('font', settings.font));
   paper.setProperty('--prose-size', `${settings.size}pt`);
   paper.setProperty('--prose-leading', settings.leading);
-  const rules = proseStyleCSS(settings).replaceAll('[data-prose-style', '.prose-content > [data-prose-style');
+  const rules = proseStyleCSS(settings, '.prose-content > ');
   $('manuscript-style').textContent = rules;
-  $('paper-spec').textContent = `${{ letter: 'US Letter', a4: 'A4', custom: 'Custom' }[settings.pageSize]} · ${settings.font} ${settings.size} pt`;
+  $('paper-spec').textContent = `${{ letter: 'US Letter', a4: 'A4', a5: 'A5', custom: 'Custom' }[settings.pageSize]} · ${settings.font} ${settings.size} pt`;
   $('print-style').textContent = `
     @page {
       size: ${width}pt ${height}pt;
@@ -38,22 +38,6 @@ export function setZoom(settings) {
   const available = viewport.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 2;
   const scale = chosen === 'fit' ? Math.max(0.25, Math.min(1, available / (width * pointScale))) : Number(chosen);
   $('pages').style.setProperty('--page-zoom', scale);
-}
-
-export function estimatePages(root, settings) {
-  const { height } = pageDimensions(settings);
-  const limit = (height - settings.top - settings.bottom) * pointScale;
-  let count = 0;
-  let occupied = 0;
-  for (const block of root.children) {
-    if (block.matches('hr[data-page-break]')) {
-      count += Math.max(1, Math.ceil(occupied / limit));
-      occupied = 0;
-      continue;
-    }
-    occupied += block.offsetHeight;
-  }
-  return count + Math.max(1, Math.ceil(occupied / limit));
 }
 
 export async function exportPDF() {

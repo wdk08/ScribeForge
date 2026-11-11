@@ -12,11 +12,19 @@ const assets = [
 
 export async function copyNotices(output) {
   for (const file of legalFiles) await cp(resolve(root, file), resolve(output, file));
-  const runtimeLicenses = ['fflate', 'orderedmap', 'rope-sequence', 'w3c-keyname',
+  const runtimeLicenses = ['jspdf', 'fflate', 'orderedmap', 'rope-sequence', 'w3c-keyname',
+    '@babel/runtime', 'canvg', 'core-js', 'dompurify', 'fast-png', 'html2canvas', 'iobuffer', 'pako', 'raf', 'svg-pathdata',
     ...['commands', 'history', 'keymap', 'model', 'state', 'transform', 'view'].map(name => `prosemirror-${name}`)];
+  const licenseFiles = [
+    ...runtimeLicenses.map(pkg => [pkg, 'LICENSE', pkg.replace('/', '-')]),
+    ['dompurify', 'LICENSE-MPL', 'dompurify-mpl'],
+    ['performance-now', 'license.txt', 'performance-now'],
+    ['rgbcolor', 'LICENSE.md', 'rgbcolor'],
+    ['stackblur-canvas', 'LICENSE-MIT.txt', 'stackblur-canvas'],
+  ];
   await mkdir(resolve(output, 'notices'), { recursive: true });
-  for (const pkg of runtimeLicenses) {
-    await cp(resolve(root, 'node_modules', pkg, 'LICENSE'), resolve(output, 'notices', `${pkg}.txt`));
+  for (const [pkg, filename, label] of licenseFiles) {
+    await cp(resolve(root, 'node_modules', pkg, filename), resolve(output, 'notices', `${label}.txt`));
   }
 }
 

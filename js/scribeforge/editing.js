@@ -1,13 +1,10 @@
+import { pageFlow } from './pagination.js';
 import { EditorState, NodeSelection, Plugin, TextSelection } from 'prosemirror-state';
 import { baseKeymap, chainCommands, exitCode, splitBlockAs } from 'prosemirror-commands';
 import { history, redo, undo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
 import { Decoration, DecorationSet } from 'prosemirror-view';
-import { countWords, isChapterStyle, paragraphFields, paragraphText, resolvedStyle, schema } from './model.js';
-
-const namedNumber = '(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand)';
-const number = `(?:[0-9]{1,4}|[ivxlcdm]{1,8}|${namedNumber}(?:[ -]${namedNumber}){0,5})`;
-const chapterPattern = new RegExp(`^(?:chapter\\s+${number}|prologue|epilogue)(?:\\s*[:–—]\\s*[^.!?\\n]{1,95})?$`, 'iu');
+import { automaticChapter, chapterHeading, countWords, isChapterStyle, paragraphFields, paragraphStyle, paragraphText, resolvedParagraph, resolvedStyle, schema } from './model.js';
 
 export function manuscriptIndex(doc, settings) {
   const blocks = [];
@@ -21,8 +18,9 @@ export function manuscriptIndex(doc, settings) {
     if (node.type !== schema.nodes.paragraph) return;
     const text = paragraphText(node);
     const title = text.trim();
-    const explicit = isChapterStyle(node.attrs.style, settings);
-    const inferred = node.attrs.style === 'normal' && title.length <= 120 && chapterPattern.test(title);
+    const explicit = node.attrs.chapterMode !== 'off' && isChapterStyle(node.attrs.style, settings);
+    const inferred = automaticChapter(node, settings) || (node.attrs.chapterMode !== 'off' && node.attrs.style === 'normal' &&
+      /^(?:prologue|epilogue)(?:\s*[:–—]\s*[^.!?\n]{1,95})?$/iu.test(title));
     const blockWords = countWords(text);
     words += blockWords;
     characters += Array.from(text).length;
@@ -117,10 +115,10 @@ function emphasisAt(marks, style, name, settings) {
 export function emphasisActive(state, name, settings) {
   const { selection, storedMarks } = state;
   const { $from, from, to } = selection;
-  if (selection.empty) return emphasisAt(storedMarks ?? $from.marks(), $from.parent.attrs.style, name, settings);
+  if (selection.empty) return emphasisAt(storedMarks ?? $from.marks(), paragraphStyle($from.parent, settings), name, settings);
   let active = false;
   state.doc.nodesBetween(from, to, (node, _pos, parent) => {
-    if (node.isInline && emphasisAt(node.marks, parent.attrs.style, name, settings)) active = true;
+    if (node.isInline && emphasisAt(node.marks, paragraphStyle(parent, settings), name, settings)) active = true;
   });
   return active;
 }
@@ -137,13 +135,13 @@ export function toggleEmphasis(name, getSettings) {
     const tr = state.tr;
     if (selection.empty) {
       tr.removeStoredMark(mark).removeStoredMark(inverse);
-      const explicit = override($from.parent.attrs.style);
+      const explicit = override(paragraphStyle($from.parent, settings));
       if (explicit) tr.addStoredMark(explicit);
     } else {
       tr.removeMark(from, to, mark).removeMark(from, to, inverse);
       state.doc.nodesBetween(from, to, (node, pos, parent) => {
         if (!node.isInline) return;
-        const explicit = override(parent.attrs.style);
+        const explicit = override(paragraphStyle(parent, settings));
         if (explicit) tr.addMark(Math.max(from, pos), Math.min(to, pos + node.nodeSize), explicit);
       });
     }
@@ -154,44 +152,65 @@ export function toggleEmphasis(name, getSettings) {
 
 export function selectionFormatting(state, settings) {
   const { from, to, $from, empty } = state.selection;
-  const properties = ['font', 'size', 'color', 'bold', 'italic', 'underline', ...Object.keys(paragraphFields)];
+  const properties = ['font', 'size', 'color', 'bold', 'italic', 'underline', 'strike', 'highlight', ...Object.keys(paragraphFields)];
   let result;
-  function include(attrs, marks) {
-    const format = resolvedStyle(attrs.style, settings);
-    for (const key of Object.keys(paragraphFields)) if (attrs[key] != null) format[key] = attrs[key];
+  function include(node, marks) {
+    const format = resolvedParagraph(node, settings);
     for (const mark of marks) {
       const name = mark.type.name;
       if (properties.includes(name)) format[name] = mark.attrs.value ?? true;
-      else if (['unbold', 'unitalic', 'ununderline'].includes(name)) format[name.slice(2)] = false;
+      else if (['unbold', 'unitalic', 'ununderline', 'unstrike'].includes(name)) format[name.slice(2)] = false;
     }
     if (!result) result = Object.fromEntries(properties.map(key => [key, format[key]]));
     else for (const key of properties) if (result[key] !== format[key]) result[key] = null;
   }
-  if (empty) include($from.parent.attrs, state.storedMarks ?? $from.marks());
+  if (empty) include($from.parent, state.storedMarks ?? $from.marks());
   else state.doc.nodesBetween(from, to, (node, _pos, parent) => {
-    if (node.isInline) include(parent.attrs, node.marks);
-    else if (node.isTextblock && !node.content.size) include(node.attrs, []);
+    if (node.isInline) include(parent, node.marks);
+    else if (node.isTextblock && !node.content.size) include(node, []);
   });
-  if (!result) include($from.parent.attrs, []);
+  if (!result) include($from.parent, []);
   return result;
 }
 
-export function changeParagraph(fields, { clearOverrides = false } = {}) {
-  return (state, dispatch) => {
-    const { from, to, $from } = state.selection;
-    const transaction = state.tr;
-    const change = (node, pos) => {
-      if (node.type !== schema.nodes.paragraph) return;
-      transaction.setNodeMarkup(pos, null, { ...(clearOverrides ? { style: node.attrs.style } : node.attrs), ...fields });
+function updateParagraphs(state, dispatch, update, clearOverrides = false) {
+  const { from, to, $from } = state.selection;
+  const transaction = state.tr;
+  let handled = false;
+  const change = (node, pos) => {
+    if (node.type !== schema.nodes.paragraph) return;
+    handled = true;
+    const fields = update(node);
+    const attrs = { ...(clearOverrides ? { style: node.attrs.style, chapterMode: node.attrs.chapterMode } : node.attrs), ...fields };
+    if (clearOverrides || Object.keys(fields).some(key => fields[key] !== node.attrs[key])) {
+      transaction.setNodeMarkup(pos, null, attrs);
       if (clearOverrides) transaction.removeMark(pos + 1, pos + node.nodeSize - 1);
-      return false;
-    };
-    if (from === to && $from.depth) change($from.parent, $from.before());
-    else state.doc.nodesBetween(from, to, change);
-    if (!transaction.docChanged) return false;
-    dispatch?.(transaction);
-    return true;
+    }
+    return false;
   };
+  if (from === to && $from.depth) change($from.parent, $from.before());
+  else state.doc.nodesBetween(from, to, change);
+  if (transaction.docChanged) dispatch?.(transaction);
+  return handled;
+}
+
+export function changeParagraph(fields, { clearOverrides = false } = {}) {
+  return (state, dispatch) => updateParagraphs(state, dispatch, () => fields, clearOverrides);
+}
+
+export function chapterOverride(enabled, settings) {
+  return (state, dispatch) => updateParagraphs(state, dispatch, node => ({
+    style: !enabled && isChapterStyle(node.attrs.style, settings) ? 'normal' : node.attrs.style,
+    chapterMode: enabled ? null : 'off',
+  }));
+}
+
+function indentParagraphs(direction, getSettings) {
+  return (state, dispatch) => updateParagraphs(state, dispatch, node => {
+    const settings = getSettings();
+    const left = resolvedParagraph(node, settings).left;
+    return { left: Math.min(288, Math.max(0, left + direction * (settings.indentStep ?? 36))) };
+  });
 }
 
 export function insertPageBreak(state, dispatch) {
@@ -235,7 +254,7 @@ export function editorState(manuscript, { confirmDelete = () => true, defaultSty
     const current = node.attrs.style;
     const style = ['poetry', 'quote'].includes(current) || (current.startsWith('custom-') && !isChapterStyle(current, getSettings()))
       ? current : defaultStyle();
-    return { type: schema.nodes.paragraph, attrs: style === node.attrs.style ? node.attrs : { style } };
+    return { type: schema.nodes.paragraph, attrs: style === node.attrs.style ? { ...node.attrs, chapterMode: null } : { style } };
   };
   const enter = chainCommands(splitBlockAs(nextParagraph), baseKeymap.Enter);
   const lineBreak = (state, dispatch) => {
@@ -251,22 +270,27 @@ export function editorState(manuscript, { confirmDelete = () => true, defaultSty
     if (decoratedDoc === state.doc && decoratedSettings === settings) return decorations;
     decoratedDoc = state.doc;
     decoratedSettings = settings;
-    const ids = [...Object.keys(settings.styles), ...Object.keys(settings.customStyles ?? {})];
-    const underlined = new Set(ids.filter(id => resolvedStyle(id, settings).underline));
-    if (settings.styles.normal?.underline) for (const id of ['normal', 'chapter', 'section', 'subheading', 'quote', 'poetry', 'scene']) {
-      if (resolvedStyle(id, settings).underline) underlined.add(id);
-    }
-    const customHeadings = new Set(Object.keys(settings.customStyles ?? {}).filter(id => isChapterStyle(id, settings)));
-    if (!underlined.size && !customHeadings.size) return decorations = DecorationSet.empty;
     const items = [];
+    const formats = new Map();
     state.doc.forEach((block, pos) => {
-      if (customHeadings.has(block.attrs.style)) {
-        items.push(Decoration.node(pos, pos + block.nodeSize, { role: 'heading', 'aria-level': '1', 'data-chapter-heading': '' }));
+      if (block.type !== schema.nodes.paragraph) return;
+      const style = paragraphStyle(block, settings);
+      if (!formats.has(style)) formats.set(style, resolvedStyle(style, settings));
+      const format = formats.get(style);
+      if (chapterHeading(block, settings)) {
+        items.push(Decoration.node(pos, pos + block.nodeSize, {
+          'data-active-style': style, 'data-chapter-heading': '', role: 'heading', 'aria-level': '1',
+        }));
       }
-      if (underlined.has(block.attrs.style)) block.forEach((node, offset) => {
-        if (node.isText && !schema.marks.ununderline.isInSet(node.marks)) {
-          items.push(Decoration.inline(pos + offset + 1, pos + offset + 1 + node.nodeSize, { class: 'prose-style-underline' }));
-        }
+      if (format.underline || format.strike || format.highlight) block.forEach((node, offset) => {
+        if (!node.isText) return;
+        const lines = [];
+        if (format.underline && !schema.marks.ununderline.isInSet(node.marks)) lines.push('underline');
+        if (format.strike && !schema.marks.unstrike.isInSet(node.marks)) lines.push('line-through');
+        const css = [];
+        if (lines.length) css.push(`text-decoration-line:${lines.join(' ')}`);
+        if (format.highlight && !schema.marks.highlight.isInSet(node.marks)) css.push(`background-color:${format.highlight}`);
+        if (css.length) items.push(Decoration.inline(pos + offset + 1, pos + offset + 1 + node.nodeSize, { style: css.join(';') }));
       });
     });
     return decorations = DecorationSet.create(state.doc, items);
@@ -274,12 +298,13 @@ export function editorState(manuscript, { confirmDelete = () => true, defaultSty
   return EditorState.create({
     doc: schema.nodeFromJSON(manuscript.content),
     plugins: [
-      history(), searchPlugin, inheritedFormatting,
+      history(), searchPlugin, inheritedFormatting, pageFlow,
       new Plugin({ filterTransaction(tr, state) {
         const size = deletionSize(tr, state);
         return !size || confirmDelete(size, state, tr);
       } }),
       keymap({
+        Tab: indentParagraphs(1, getSettings), 'Shift-Tab': indentParagraphs(-1, getSettings),
         'Mod-z': undo, 'Mod-Shift-z': redo, 'Mod-y': redo,
         'Mod-b': toggleEmphasis('bold', getSettings), 'Mod-i': toggleEmphasis('italic', getSettings), 'Mod-u': toggleEmphasis('underline', getSettings),
         Enter: enter, 'Shift-Enter': chainCommands(exitCode, lineBreak),
